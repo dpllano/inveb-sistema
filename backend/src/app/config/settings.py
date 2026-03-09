@@ -67,6 +67,8 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "https://inveb-frontend-production.up.railway.app",
         "https://inveb-api-production.up.railway.app",
+        "https://endearing-wholeness-production-b529.up.railway.app",
+        "https://inveb-sistema-production.up.railway.app",
     ]
 
     # API
