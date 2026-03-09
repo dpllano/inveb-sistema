@@ -1,0 +1,54 @@
+# ===========================================
+# INVEB React Frontend - Dockerfile Produccion
+# ===========================================
+# Multi-stage build: Node para build, Nginx para servir
+# ===========================================
+
+# Stage 1: Build
+FROM node:18-alpine AS builder
+
+LABEL maintainer="INVEB Team"
+LABEL description="INVEB Envases OT - React Frontend"
+
+WORKDIR /app
+
+# Copiar package files primero (para cache de dependencias)
+COPY package*.json ./
+
+# Instalar dependencias
+RUN npm ci --only=production
+
+# Copiar codigo fuente
+COPY . .
+
+# Build de produccion
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
+
+RUN npm run build
+
+
+# ===========================================
+# Stage 2: Production con Nginx
+# ===========================================
+FROM nginx:alpine
+
+LABEL maintainer="INVEB Team"
+LABEL description="INVEB Envases OT - React Frontend (Production)"
+LABEL version="2.0.0"
+
+# Copiar build de React
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copiar configuracion de Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
+# Puerto
+EXPOSE 80
+
+# Comando
+CMD ["nginx", "-g", "daemon off;"]

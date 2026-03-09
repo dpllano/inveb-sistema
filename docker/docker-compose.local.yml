@@ -1,0 +1,145 @@
+# ===========================================
+# INVEB - Docker Compose para Desarrollo Local
+# ===========================================
+#
+# Uso:
+#   docker compose -f docker/docker-compose.local.yml up -d
+#
+# Para ver logs:
+#   docker compose -f docker/docker-compose.local.yml logs -f
+#
+# Para detener:
+#   docker compose -f docker/docker-compose.local.yml down
+#
+# Para reconstruir:
+#   docker compose -f docker/docker-compose.local.yml up -d --build
+#
+# ===========================================
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # MYSQL - Base de Datos
+  # ===========================================
+  db:
+    image: mysql:8.0
+    container_name: inveb-mysql-local
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-envases_ot}
+      MYSQL_USER: ${DB_USER:-inveb_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-inveb_pass}
+    volumes:
+      - mysql-data-local:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3307:3306"
+    networks:
+      - inveb-local
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-root123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ===========================================
+  # BACKEND - FastAPI
+  # ===========================================
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend.local
+    container_name: inveb-backend-local
+    environment:
+      - LARAVEL_MYSQL_HOST=db
+      - LARAVEL_MYSQL_PORT=3306
+      - LARAVEL_MYSQL_USER=${DB_USER:-inveb_user}
+      - LARAVEL_MYSQL_PASSWORD=${DB_PASSWORD:-inveb_pass}
+      - LARAVEL_MYSQL_DATABASE=${DB_NAME:-envases_ot}
+      - JWT_SECRET_KEY=${JWT_SECRET:-your-super-secret-key-change-in-production-min-32-chars}
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - ENVIRONMENT=development
+      - DEBUG=true
+    volumes:
+      - ../backend/src:/app:cached
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - inveb-local
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===========================================
+  # FRONTEND - React (Modo desarrollo con hot reload)
+  # ===========================================
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend.local
+    container_name: inveb-frontend-local
+    environment:
+      - VITE_API_URL=http://localhost:8001/api/v1
+    volumes:
+      - ../frontend/src:/app/src:cached
+      - ../frontend/public:/app/public:cached
+      - ../frontend/index.html:/app/index.html:cached
+      - ../frontend/vite.config.ts:/app/vite.config.ts:cached
+      - ../frontend/tsconfig.json:/app/tsconfig.json:cached
+      - ../frontend/tsconfig.node.json:/app/tsconfig.node.json:cached
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+    networks:
+      - inveb-local
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  # ===========================================
+  # PHPMYADMIN - Administracion BD (Opcional)
+  # ===========================================
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: inveb-phpmyadmin-local
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - inveb-local
+    profiles:
+      - tools
+
+# ===========================================
+# NETWORKS
+# ===========================================
+networks:
+  inveb-local:
+    driver: bridge
+
+# ===========================================
+# VOLUMES
+# ===========================================
+volumes:
+  mysql-data-local:
+    driver: local

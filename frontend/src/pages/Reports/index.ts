@@ -1,0 +1,16 @@
+export { default as ReportsDashboard } from './ReportsDashboard';
+export { default as ReportOTsActivasPorUsuario } from './ReportOTsActivasPorUsuario';
+export { default as ReportOTsCompletadas } from './ReportOTsCompletadas';
+export { default as ReportTiempoPorArea } from './ReportTiempoPorArea';
+export { default as ReportRechazosPorMes } from './ReportRechazosPorMes';
+export { default as ReportCargaMensual } from './ReportCargaMensual';
+export { default as ReportAnulaciones } from './ReportAnulaciones';
+export { default as ReportOTsCompletadasFechas } from './ReportOTsCompletadasFechas';
+export { default as ReportGestionOTsActivas } from './ReportGestionOTsActivas';
+export { default as ReportTiempoPrimeraMuestra } from './ReportTiempoPrimeraMuestra';
+export { default as ReportMotivosRechazo } from './ReportMotivosRechazo';
+export { default as ReportTiempoDisenadorExterno } from './ReportTiempoDisenadorExterno';
+export { default as ReportSalaMuestra } from './ReportSalaMuestra';
+export { default as ReportIndicadorSalaMuestra } from './ReportIndicadorSalaMuestra';
+export { default as ReportDisenoEstructuralSala } from './ReportDisenoEstructuralSala';
+export { default as ReportMuestras } from './ReportMuestras';

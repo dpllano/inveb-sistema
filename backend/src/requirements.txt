@@ -1,0 +1,40 @@
+# INVEB Envases OT - Microservice Dependencies
+# Stack: Monitor One Standard
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Database MySQL
+sqlmodel==0.0.14
+pymysql==1.1.0
+
+# Authentication
+bcrypt==4.1.2
+pyjwt==2.8.0
+
+# Validation & Settings
+pydantic[email]==2.5.3
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# Utilities
+python-dotenv==1.0.0
+httpx==0.26.0
+python-multipart==0.0.6
+
+# PDF Generation
+reportlab==4.0.8
+
+# Excel Generation
+openpyxl==3.1.2
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+
+# Development
+black==23.12.1
+isort==5.13.2
+flake8==7.0.0
