@@ -2,9 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Force rebuild: 2026-03-09-v2
 # Install dependencies
 COPY src/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && pip list | grep -i crypt
 
 # Copy source code
 COPY src/ .
