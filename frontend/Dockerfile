@@ -6,16 +6,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Set API URL for production build
-ENV VITE_API_URL=https://inveb-api-production.up.railway.app/api/v1
-ENV VITE_API_ROOT_URL=https://inveb-api-production.up.railway.app
+# Set API URL for production build (will be overridden by Railway env vars)
+ARG VITE_API_URL=https://inveb-sistema-production.up.railway.app/api/v1
+ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_ENV=production
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (--legacy-peer-deps to handle version conflicts)
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
