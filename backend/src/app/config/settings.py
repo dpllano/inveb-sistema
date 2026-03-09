@@ -4,9 +4,18 @@ Utiliza pydantic-settings para manejo de variables de entorno.
 Soporta Railway y Docker con variables de entorno flexibles.
 """
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
 from functools import lru_cache
 import os
+
+
+# Leer variables de entorno directamente (Railway, Docker, o local)
+def get_env(names: list, default: str = "") -> str:
+    """Busca una variable de entorno en múltiples nombres posibles."""
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return default
 
 
 class Settings(BaseSettings):
@@ -18,41 +27,27 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ENVIRONMENT: str = "development"
 
-    # Database MySQL - Soporta múltiples nombres de variables
-    # Railway usa: MYSQL_HOST, MYSQL_PORT, etc.
-    # Docker/Local usa: LARAVEL_MYSQL_HOST, etc.
-    LARAVEL_MYSQL_HOST: str = "127.0.0.1"
-    LARAVEL_MYSQL_PORT: int = 3306
-    LARAVEL_MYSQL_USER: str = "envases"
-    LARAVEL_MYSQL_PASSWORD: str = "secret"
-    LARAVEL_MYSQL_DATABASE: str = "envases_ot"
+    # Database MySQL - Lee directamente de variables de entorno
+    # Soporta: MYSQL_*, MYSQLHOST, LARAVEL_MYSQL_*, DB_*
+    @property
+    def LARAVEL_MYSQL_HOST(self) -> str:
+        return get_env(['MYSQL_HOST', 'MYSQLHOST', 'LARAVEL_MYSQL_HOST', 'DB_HOST'], '127.0.0.1')
 
-    @field_validator('LARAVEL_MYSQL_HOST', mode='before')
-    @classmethod
-    def get_mysql_host(cls, v):
-        # Railway usa MYSQL_HOST o MYSQLHOST
-        return os.environ.get('MYSQL_HOST') or os.environ.get('MYSQLHOST') or os.environ.get('DB_HOST') or v
+    @property
+    def LARAVEL_MYSQL_PORT(self) -> int:
+        return int(get_env(['MYSQL_PORT', 'MYSQLPORT', 'LARAVEL_MYSQL_PORT', 'DB_PORT'], '3306'))
 
-    @field_validator('LARAVEL_MYSQL_PORT', mode='before')
-    @classmethod
-    def get_mysql_port(cls, v):
-        port = os.environ.get('MYSQL_PORT') or os.environ.get('MYSQLPORT') or os.environ.get('DB_PORT') or v
-        return int(port) if port else 3306
+    @property
+    def LARAVEL_MYSQL_USER(self) -> str:
+        return get_env(['MYSQL_USER', 'MYSQLUSER', 'LARAVEL_MYSQL_USER', 'DB_USER'], 'envases')
 
-    @field_validator('LARAVEL_MYSQL_USER', mode='before')
-    @classmethod
-    def get_mysql_user(cls, v):
-        return os.environ.get('MYSQL_USER') or os.environ.get('MYSQLUSER') or os.environ.get('DB_USER') or v
+    @property
+    def LARAVEL_MYSQL_PASSWORD(self) -> str:
+        return get_env(['MYSQL_PASSWORD', 'MYSQLPASSWORD', 'LARAVEL_MYSQL_PASSWORD', 'DB_PASSWORD'], 'secret')
 
-    @field_validator('LARAVEL_MYSQL_PASSWORD', mode='before')
-    @classmethod
-    def get_mysql_password(cls, v):
-        return os.environ.get('MYSQL_PASSWORD') or os.environ.get('MYSQLPASSWORD') or os.environ.get('DB_PASSWORD') or v
-
-    @field_validator('LARAVEL_MYSQL_DATABASE', mode='before')
-    @classmethod
-    def get_mysql_database(cls, v):
-        return os.environ.get('MYSQL_DATABASE') or os.environ.get('MYSQLDATABASE') or os.environ.get('DB_NAME') or v
+    @property
+    def LARAVEL_MYSQL_DATABASE(self) -> str:
+        return get_env(['MYSQL_DATABASE', 'MYSQLDATABASE', 'LARAVEL_MYSQL_DATABASE', 'DB_NAME'], 'envases_ot')
 
     # JWT Configuration
     JWT_SECRET_KEY: str = "inveb-cascade-service-secret-key-2024"
