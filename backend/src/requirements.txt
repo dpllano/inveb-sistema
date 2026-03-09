@@ -8,6 +8,7 @@ uvicorn[standard]==0.27.0
 # Database MySQL
 sqlmodel==0.0.14
 pymysql==1.1.0
+cryptography==42.0.0  # Required for MySQL 8.0 caching_sha2_password auth
 
 # Authentication
 bcrypt==4.1.2
