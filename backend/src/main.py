@@ -29,6 +29,8 @@ CORS_ORIGINS = [
     "https://inveb-frontend-production.up.railway.app",
     "https://inveb-api-production.up.railway.app",
     "https://inveb-api-production-a4a9.up.railway.app",
+    "https://endearing-wholeness-production-b529.up.railway.app",
+    "https://inveb-sistema-production.up.railway.app",
 ]
 
 
