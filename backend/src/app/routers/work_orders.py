@@ -3103,8 +3103,13 @@ async def _get_form_options_complete_impl() -> FormOptionsComplete:
             """)
             options['maquila_servicios'] = cursor.fetchall()
 
-            # Comunas (tabla no existe en esta BD, retornar lista vacía)
-            options['comunas'] = []
+            # Comunas - Fuente Laravel: CiudadesFlete::pluck('ciudad', 'id')
+            cursor.execute("""
+                SELECT id, ciudad as nombre
+                FROM ciudades_fletes
+                ORDER BY ciudad
+            """)
+            options['comunas'] = cursor.fetchall()
 
             # País referencia
             cursor.execute("""

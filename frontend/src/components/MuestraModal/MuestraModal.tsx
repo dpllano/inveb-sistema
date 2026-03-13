@@ -29,26 +29,43 @@ interface MuestraFormData {
   cantidad_laboratorio: number | null;
   comentario_laboratorio: string;
   // Datos para Envío Cliente VB (hasta 4 destinatarios)
+  // Fuente Laravel: muestras-ot.blade.php líneas 644-704
+  contactos_cliente_1: number | null;
   destinatario_1: string;
   comuna_1: number | null;
   direccion_1: string;
   cantidad_1: number | null;
   comentario_1: string;
+  check_fecha_corte_1: boolean;  // Solo roles 13, 14
+  fecha_corte_1: string;
+  sala_corte_1: number | null;  // Solo roles 5, 6, 13, 14
+  contactos_cliente_2: number | null;
   destinatario_2: string;
   comuna_2: number | null;
   direccion_2: string;
   cantidad_2: number | null;
   comentario_2: string;
+  check_fecha_corte_2: boolean;
+  fecha_corte_2: string;
+  sala_corte_2: number | null;
+  contactos_cliente_3: number | null;
   destinatario_3: string;
   comuna_3: number | null;
   direccion_3: string;
   cantidad_3: number | null;
   comentario_3: string;
+  check_fecha_corte_3: boolean;
+  fecha_corte_3: string;
+  sala_corte_3: number | null;
+  contactos_cliente_4: number | null;
   destinatario_4: string;
   comuna_4: number | null;
   direccion_4: string;
   cantidad_4: number | null;
   comentario_4: string;
+  check_fecha_corte_4: boolean;
+  fecha_corte_4: string;
+  sala_corte_4: number | null;
 }
 
 interface MuestraModalProps {
@@ -62,6 +79,8 @@ interface MuestraModalProps {
   cartones?: Array<{ id: string | number; nombre?: string; codigo?: string }>;
   cartonesMuestra?: Array<{ id: string | number; nombre?: string; codigo?: string }>;
   comunas?: Array<{ id: string | number; nombre?: string }>;
+  contactosCliente?: Array<{ id: string | number; nombre?: string; comuna_id?: number; direccion?: string }>; // Contactos de la instalación seleccionada
+  salasCortes?: Array<{ id: string | number; nombre?: string }>; // Plantas de corte para muestras
   roleId?: number; // Issue 12: Para hacer campos readonly para vendedor
 }
 
@@ -80,35 +99,76 @@ const INITIAL_FORM_DATA: MuestraFormData = {
   comentario_disenador_revision: '',
   cantidad_laboratorio: null,
   comentario_laboratorio: '',
+  contactos_cliente_1: null,
   destinatario_1: '',
   comuna_1: null,
   direccion_1: '',
   cantidad_1: null,
   comentario_1: '',
+  check_fecha_corte_1: false,
+  fecha_corte_1: '',
+  sala_corte_1: null,
+  contactos_cliente_2: null,
   destinatario_2: '',
   comuna_2: null,
   direccion_2: '',
   cantidad_2: null,
   comentario_2: '',
+  check_fecha_corte_2: false,
+  fecha_corte_2: '',
+  sala_corte_2: null,
+  contactos_cliente_3: null,
   destinatario_3: '',
   comuna_3: null,
   direccion_3: '',
   cantidad_3: null,
   comentario_3: '',
+  check_fecha_corte_3: false,
+  fecha_corte_3: '',
+  sala_corte_3: null,
+  contactos_cliente_4: null,
   destinatario_4: '',
   comuna_4: null,
   direccion_4: '',
   cantidad_4: null,
   comentario_4: '',
+  check_fecha_corte_4: false,
+  fecha_corte_4: '',
+  sala_corte_4: null,
 };
 
-const DESTINATARIOS_OPTIONS = [
+// Opciones de destino para OT Normal (incluye Envío Cliente VB)
+const DESTINATARIOS_OPTIONS_NORMAL = [
   { id: '1', nombre: 'Retira Ventas VB' },
   { id: '2', nombre: 'Retira Diseñador VB' },
   { id: '3', nombre: 'Envío Laboratorio' },
   { id: '4', nombre: 'Envío Cliente VB' },
   { id: '5', nombre: 'Retira Diseñador Revisión' },
 ];
+
+// Opciones de destino para Licitaciones (tipo_solicitud=6) - SIN Envío Cliente VB
+// Fuente Laravel: muestras-ot-licitaciones.blade.php línea 501
+const DESTINATARIOS_OPTIONS_LICITACION = [
+  { id: '1', nombre: 'Retira Ventas VB' },
+  { id: '2', nombre: 'Retira Diseñador VB' },
+  { id: '3', nombre: 'Envío Laboratorio' },
+  { id: '5', nombre: 'Retira Diseñador Revisión' },
+];
+
+// Roles que pueden ver la sección de destinos
+// Fuente Laravel: muestras-ot.blade.php líneas 500-503
+// JefeVenta=3, Vendedor=4, JefeDesarrollo=5, Ingeniero=6, VendedorExterno=19
+const ROLES_PUEDEN_VER_DESTINOS = [3, 4, 5, 6, 19];
+
+// Roles que pueden ver campo "Fecha de Corte" (checkbox + datepicker)
+// Fuente Laravel: muestras-ot.blade.php línea 674
+// JefeMuestras=13, TecnicoMuestras=14
+const ROLES_FECHA_CORTE = [13, 14];
+
+// Roles que pueden ver campo "Planta de Corte" (select)
+// Fuente Laravel: muestras-ot.blade.php líneas 689-692
+// JefeDesarrollo=5, Ingeniero=6, JefeMuestras=13, TecnicoMuestras=14
+const ROLES_PLANTA_CORTE = [5, 6, 13, 14];
 
 const PEGADO_OPTIONS = [
   { id: 1, nombre: 'Sin Pegar' },
@@ -209,17 +269,39 @@ const Select = styled.select`
   }
 `;
 
-const MultiSelect = styled.select`
-  padding: 0.5rem;
+// Checkbox list para selección múltiple de destinos (más intuitivo que select multiple)
+const CheckboxList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid ${theme.colors.border};
   border-radius: 4px;
-  font-size: 0.875rem;
-  background: white;
-  min-height: 80px;
+  background: #fafafa;
+`;
 
-  &:focus {
-    outline: none;
-    border-color: ${theme.colors.primary};
+const CheckboxItem = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  span {
+    font-size: 0.875rem;
+    color: ${theme.colors.textPrimary};
   }
 `;
 
@@ -282,7 +364,7 @@ const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
 `;
 
 // Roles de vendedor (Issue 12)
-const VENDEDOR_ROLES = [4, 17]; // Vendedor y Vendedor Externo
+const VENDEDOR_ROLES = [4, 19]; // Vendedor y Vendedor Externo
 
 export function MuestraModal({
   isOpen,
@@ -295,10 +377,12 @@ export function MuestraModal({
   cartones = [],
   cartonesMuestra = [],
   comunas = [],
+  contactosCliente = [],
+  salasCortes = [],
   roleId,
 }: MuestraModalProps) {
   // DEBUG: Verificar props recibidas
-  console.log('MuestraModal props: cads=' + cads.length + ', cartones=' + cartones.length + ', cartonesMuestra=' + cartonesMuestra.length + ', roleId=' + roleId);
+  console.log('MuestraModal props: cads=' + cads.length + ', cartones=' + cartones.length + ', cartonesMuestra=' + cartonesMuestra.length + ', comunas=' + comunas.length + ', contactosCliente=' + contactosCliente.length + ', salasCortes=' + salasCortes.length + ', roleId=' + roleId);
 
   const [formData, setFormData] = useState<MuestraFormData>({
     ...INITIAL_FORM_DATA,
@@ -316,6 +400,31 @@ export function MuestraModal({
     return tipoSolicitud === 1 || tipoSolicitud === 4 || tipoSolicitud === 7;
   }, [tipoSolicitud]);
 
+  // Determinar si puede ver la sección de destinos según el rol
+  // Fuente Laravel: muestras-ot.blade.php líneas 500-503
+  const puedeVerDestinos = useMemo(() => {
+    return roleId ? ROLES_PUEDEN_VER_DESTINOS.includes(roleId) : true;
+  }, [roleId]);
+
+  // Determinar si puede ver campo "Fecha de Corte" según el rol
+  // Fuente Laravel: muestras-ot.blade.php línea 674
+  const puedeVerFechaCorte = useMemo(() => {
+    return roleId ? ROLES_FECHA_CORTE.includes(roleId) : false;
+  }, [roleId]);
+
+  // Determinar si puede ver campo "Planta de Corte" según el rol
+  // Fuente Laravel: muestras-ot.blade.php líneas 689-692
+  const puedeVerPlantaCorte = useMemo(() => {
+    return roleId ? ROLES_PLANTA_CORTE.includes(roleId) : false;
+  }, [roleId]);
+
+  // Seleccionar opciones de destino según tipo de solicitud
+  // Fuente Laravel: muestras-ot.blade.php vs muestras-ot-licitaciones.blade.php
+  // Licitaciones (tipo_solicitud=6) no tienen "Envío Cliente VB"
+  const destinatariosOptions = useMemo(() => {
+    return tipoSolicitud === 6 ? DESTINATARIOS_OPTIONS_LICITACION : DESTINATARIOS_OPTIONS_NORMAL;
+  }, [tipoSolicitud]);
+
   // Verificar qué destinatarios están seleccionados
   const destinatariosSeleccionados = useMemo(() => ({
     vendedor: formData.destinatarios_id.includes('1'),
@@ -325,14 +434,63 @@ export function MuestraModal({
     disenadorRevision: formData.destinatarios_id.includes('5'),
   }), [formData.destinatarios_id]);
 
-  const handleInputChange = useCallback((field: keyof MuestraFormData, value: string | number | null | string[]) => {
+  const handleInputChange = useCallback((field: keyof MuestraFormData, value: string | number | null | string[] | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleDestinatariosChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map(opt => opt.value);
-    setFormData(prev => ({ ...prev, destinatarios_id: selectedOptions }));
+  // Handler para toggle de checkbox individual (más intuitivo que select multiple)
+  const handleDestinatarioToggle = useCallback((id: string) => {
+    setFormData(prev => {
+      const currentIds = prev.destinatarios_id;
+      if (currentIds.includes(id)) {
+        // Quitar si ya está seleccionado
+        return { ...prev, destinatarios_id: currentIds.filter(d => d !== id) };
+      } else {
+        // Agregar si no está seleccionado
+        return { ...prev, destinatarios_id: [...currentIds, id] };
+      }
+    });
   }, []);
+
+  // Handler para autocompletar campos cuando se selecciona un contacto
+  // Fuente Laravel: ot-muestras.js líneas 57-76 - getDatosContactoInstalacion
+  const handleContactoChange = useCallback((contactoIndex: 1 | 2 | 3 | 4, contactoId: number | null) => {
+    const contactoField = `contactos_cliente_${contactoIndex}` as keyof MuestraFormData;
+    const destinatarioField = `destinatario_${contactoIndex}` as keyof MuestraFormData;
+    const comunaField = `comuna_${contactoIndex}` as keyof MuestraFormData;
+    const direccionField = `direccion_${contactoIndex}` as keyof MuestraFormData;
+
+    if (!contactoId) {
+      // Si se deselecciona, limpiar campos
+      setFormData(prev => ({
+        ...prev,
+        [contactoField]: null,
+        [destinatarioField]: '',
+        [comunaField]: null,
+        [direccionField]: '',
+      }));
+      return;
+    }
+
+    // Buscar el contacto en la lista
+    const contacto = contactosCliente.find(c => Number(c.id) === contactoId);
+    if (contacto) {
+      // Autocompletar campos según Laravel: nombre_contacto → Destinatario, comuna_contacto → Comuna, direccion_contacto → Dirección
+      setFormData(prev => ({
+        ...prev,
+        [contactoField]: contactoId,
+        [destinatarioField]: contacto.nombre || '',
+        [comunaField]: contacto.comuna_id || null,
+        [direccionField]: contacto.direccion || '',
+      }));
+    } else {
+      // Si no se encuentra, solo guardar el ID
+      setFormData(prev => ({
+        ...prev,
+        [contactoField]: contactoId,
+      }));
+    }
+  }, [contactosCliente]);
 
   const handleSave = useCallback(() => {
     // Calcular número total de muestras
@@ -455,7 +613,8 @@ export function MuestraModal({
         </CardBody>
       </FormCard>
 
-      {/* Destinos */}
+      {/* Destinos - Solo visible para ciertos roles según Laravel líneas 500-503 */}
+      {puedeVerDestinos && (
       <FormCard>
         <CardHeader>
           <CardTitle>Destinos</CardTitle>
@@ -463,16 +622,20 @@ export function MuestraModal({
         <CardBody>
           <FormGrid $columns={1}>
             <FormGroup>
-              <Label>Enviar Muestras a</Label>
-              <MultiSelect
-                multiple
-                value={formData.destinatarios_id}
-                onChange={handleDestinatariosChange}
-              >
-                {DESTINATARIOS_OPTIONS.map(opt => (
-                  <option key={opt.id} value={opt.id}>{opt.nombre}</option>
+              <Label>Enviar Muestras a (puede seleccionar múltiples)</Label>
+              {/* Checkboxes en lugar de MultiSelect para mejor UX */}
+              <CheckboxList>
+                {destinatariosOptions.map(opt => (
+                  <CheckboxItem key={opt.id}>
+                    <input
+                      type="checkbox"
+                      checked={formData.destinatarios_id.includes(opt.id)}
+                      onChange={() => handleDestinatarioToggle(opt.id)}
+                    />
+                    <span>{opt.nombre}</span>
+                  </CheckboxItem>
                 ))}
-              </MultiSelect>
+              </CheckboxList>
             </FormGroup>
           </FormGrid>
 
@@ -578,12 +741,28 @@ export function MuestraModal({
           </DestinoSection>
 
           {/* Envío Cliente VB */}
+          {/* Fuente Laravel: muestras-ot.blade.php líneas 641-704 */}
           <DestinoSection $visible={destinatariosSeleccionados.clientes}>
             <DestinoTitle>Envío Cliente VB</DestinoTitle>
 
-            {/* Destinatario 1 */}
-            {/* Issue 14: Comuna no se muestra para vendedor (esVendedor) */}
-            <FormGrid $columns={esVendedor ? 4 : 5} style={{ marginBottom: '1rem' }}>
+            {/* Contactos Cliente 1 - Fuente Laravel línea 646 */}
+            <FormGrid $columns={1} style={{ marginBottom: '0.5rem' }}>
+              <FormGroup>
+                <Label>Contactos Cliente</Label>
+                <Select
+                  value={formData.contactos_cliente_1 || ''}
+                  onChange={(e) => handleContactoChange(1, e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {contactosCliente.map(contacto => (
+                    <option key={String(contacto.id)} value={contacto.id}>{contacto.nombre || contacto.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
+            </FormGrid>
+
+            {/* Destinatario 1 - 6 campos según Laravel */}
+            <FormGrid $columns={6} style={{ marginBottom: '1rem' }}>
               <FormGroup>
                 <Label>Destinatario 1</Label>
                 <Input
@@ -592,20 +771,18 @@ export function MuestraModal({
                   onChange={(e) => handleInputChange('destinatario_1', e.target.value)}
                 />
               </FormGroup>
-              {!esVendedor && (
-                <FormGroup>
-                  <Label>Comuna</Label>
-                  <Select
-                    value={formData.comuna_1 || ''}
-                    onChange={(e) => handleInputChange('comuna_1', e.target.value ? Number(e.target.value) : null)}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {comunas.map(comuna => (
-                      <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
-                    ))}
-                  </Select>
-                </FormGroup>
-              )}
+              <FormGroup>
+                <Label>Comuna</Label>
+                <Select
+                  value={formData.comuna_1 || ''}
+                  onChange={(e) => handleInputChange('comuna_1', e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {comunas.map(comuna => (
+                    <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
               <FormGroup>
                 <Label>Dirección</Label>
                 <Input
@@ -635,10 +812,62 @@ export function MuestraModal({
                   ))}
                 </Select>
               </FormGroup>
+              {/* Fecha de Corte - Solo roles 13, 14 */}
+              {puedeVerFechaCorte && (
+                <FormGroup>
+                  <Label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.check_fecha_corte_1}
+                      onChange={(e) => handleInputChange('check_fecha_corte_1', e.target.checked)}
+                    />
+                    Fecha de Corte
+                  </Label>
+                  {formData.check_fecha_corte_1 && (
+                    <Input
+                      type="date"
+                      value={formData.fecha_corte_1}
+                      onChange={(e) => handleInputChange('fecha_corte_1', e.target.value)}
+                    />
+                  )}
+                </FormGroup>
+              )}
+              {/* Planta de Corte - Solo roles 5, 6, 13, 14 */}
+              {puedeVerPlantaCorte && (
+                <FormGroup>
+                  <Label>Planta de Corte</Label>
+                  <Select
+                    value={formData.sala_corte_1 || ''}
+                    onChange={(e) => handleInputChange('sala_corte_1', e.target.value ? Number(e.target.value) : null)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {salasCortes.map(sala => (
+                      <option key={String(sala.id)} value={sala.id}>{sala.nombre || sala.id}</option>
+                    ))}
+                  </Select>
+                </FormGroup>
+              )}
+            </FormGrid>
+
+            {/* Contactos Cliente 2 */}
+            <hr style={{ margin: '1rem 0', borderColor: '#e0e0e0' }} />
+            <FormGrid $columns={1} style={{ marginBottom: '0.5rem' }}>
+              <FormGroup>
+                <Label>Contactos Cliente</Label>
+                <Select
+                  value={formData.contactos_cliente_2 || ''}
+                  onChange={(e) => handleContactoChange(2, e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {contactosCliente.map(contacto => (
+                    <option key={String(contacto.id)} value={contacto.id}>{contacto.nombre || contacto.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
             </FormGrid>
 
             {/* Destinatario 2 */}
-            <FormGrid $columns={esVendedor ? 4 : 5} style={{ marginBottom: '1rem' }}>
+            <FormGrid $columns={6} style={{ marginBottom: '1rem' }}>
               <FormGroup>
                 <Label>Destinatario 2</Label>
                 <Input
@@ -647,20 +876,18 @@ export function MuestraModal({
                   onChange={(e) => handleInputChange('destinatario_2', e.target.value)}
                 />
               </FormGroup>
-              {!esVendedor && (
-                <FormGroup>
-                  <Label>Comuna</Label>
-                  <Select
-                    value={formData.comuna_2 || ''}
-                    onChange={(e) => handleInputChange('comuna_2', e.target.value ? Number(e.target.value) : null)}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {comunas.map(comuna => (
-                      <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
-                    ))}
-                  </Select>
-                </FormGroup>
-              )}
+              <FormGroup>
+                <Label>Comuna</Label>
+                <Select
+                  value={formData.comuna_2 || ''}
+                  onChange={(e) => handleInputChange('comuna_2', e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {comunas.map(comuna => (
+                    <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
               <FormGroup>
                 <Label>Dirección</Label>
                 <Input
@@ -690,10 +917,62 @@ export function MuestraModal({
                   ))}
                 </Select>
               </FormGroup>
+              {/* Fecha de Corte 2 - Solo roles 13, 14 */}
+              {puedeVerFechaCorte && (
+                <FormGroup>
+                  <Label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.check_fecha_corte_2}
+                      onChange={(e) => handleInputChange('check_fecha_corte_2', e.target.checked)}
+                    />
+                    Fecha de Corte
+                  </Label>
+                  {formData.check_fecha_corte_2 && (
+                    <Input
+                      type="date"
+                      value={formData.fecha_corte_2}
+                      onChange={(e) => handleInputChange('fecha_corte_2', e.target.value)}
+                    />
+                  )}
+                </FormGroup>
+              )}
+              {/* Planta de Corte 2 - Solo roles 5, 6, 13, 14 */}
+              {puedeVerPlantaCorte && (
+                <FormGroup>
+                  <Label>Planta de Corte</Label>
+                  <Select
+                    value={formData.sala_corte_2 || ''}
+                    onChange={(e) => handleInputChange('sala_corte_2', e.target.value ? Number(e.target.value) : null)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {salasCortes.map(sala => (
+                      <option key={String(sala.id)} value={sala.id}>{sala.nombre || sala.id}</option>
+                    ))}
+                  </Select>
+                </FormGroup>
+              )}
+            </FormGrid>
+
+            {/* Contactos Cliente 3 */}
+            <hr style={{ margin: '1rem 0', borderColor: '#e0e0e0' }} />
+            <FormGrid $columns={1} style={{ marginBottom: '0.5rem' }}>
+              <FormGroup>
+                <Label>Contactos Cliente</Label>
+                <Select
+                  value={formData.contactos_cliente_3 || ''}
+                  onChange={(e) => handleContactoChange(3, e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {contactosCliente.map(contacto => (
+                    <option key={String(contacto.id)} value={contacto.id}>{contacto.nombre || contacto.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
             </FormGrid>
 
             {/* Destinatario 3 */}
-            <FormGrid $columns={esVendedor ? 4 : 5} style={{ marginBottom: '1rem' }}>
+            <FormGrid $columns={6} style={{ marginBottom: '1rem' }}>
               <FormGroup>
                 <Label>Destinatario 3</Label>
                 <Input
@@ -702,20 +981,18 @@ export function MuestraModal({
                   onChange={(e) => handleInputChange('destinatario_3', e.target.value)}
                 />
               </FormGroup>
-              {!esVendedor && (
-                <FormGroup>
-                  <Label>Comuna</Label>
-                  <Select
-                    value={formData.comuna_3 || ''}
-                    onChange={(e) => handleInputChange('comuna_3', e.target.value ? Number(e.target.value) : null)}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {comunas.map(comuna => (
-                      <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
-                    ))}
-                  </Select>
-                </FormGroup>
-              )}
+              <FormGroup>
+                <Label>Comuna</Label>
+                <Select
+                  value={formData.comuna_3 || ''}
+                  onChange={(e) => handleInputChange('comuna_3', e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {comunas.map(comuna => (
+                    <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
               <FormGroup>
                 <Label>Dirección</Label>
                 <Input
@@ -745,10 +1022,62 @@ export function MuestraModal({
                   ))}
                 </Select>
               </FormGroup>
+              {/* Fecha de Corte 3 - Solo roles 13, 14 */}
+              {puedeVerFechaCorte && (
+                <FormGroup>
+                  <Label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.check_fecha_corte_3}
+                      onChange={(e) => handleInputChange('check_fecha_corte_3', e.target.checked)}
+                    />
+                    Fecha de Corte
+                  </Label>
+                  {formData.check_fecha_corte_3 && (
+                    <Input
+                      type="date"
+                      value={formData.fecha_corte_3}
+                      onChange={(e) => handleInputChange('fecha_corte_3', e.target.value)}
+                    />
+                  )}
+                </FormGroup>
+              )}
+              {/* Planta de Corte 3 - Solo roles 5, 6, 13, 14 */}
+              {puedeVerPlantaCorte && (
+                <FormGroup>
+                  <Label>Planta de Corte</Label>
+                  <Select
+                    value={formData.sala_corte_3 || ''}
+                    onChange={(e) => handleInputChange('sala_corte_3', e.target.value ? Number(e.target.value) : null)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {salasCortes.map(sala => (
+                      <option key={String(sala.id)} value={sala.id}>{sala.nombre || sala.id}</option>
+                    ))}
+                  </Select>
+                </FormGroup>
+              )}
+            </FormGrid>
+
+            {/* Contactos Cliente 4 */}
+            <hr style={{ margin: '1rem 0', borderColor: '#e0e0e0' }} />
+            <FormGrid $columns={1} style={{ marginBottom: '0.5rem' }}>
+              <FormGroup>
+                <Label>Contactos Cliente</Label>
+                <Select
+                  value={formData.contactos_cliente_4 || ''}
+                  onChange={(e) => handleContactoChange(4, e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {contactosCliente.map(contacto => (
+                    <option key={String(contacto.id)} value={contacto.id}>{contacto.nombre || contacto.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
             </FormGrid>
 
             {/* Destinatario 4 */}
-            <FormGrid $columns={esVendedor ? 4 : 5}>
+            <FormGrid $columns={6}>
               <FormGroup>
                 <Label>Destinatario 4</Label>
                 <Input
@@ -757,20 +1086,18 @@ export function MuestraModal({
                   onChange={(e) => handleInputChange('destinatario_4', e.target.value)}
                 />
               </FormGroup>
-              {!esVendedor && (
-                <FormGroup>
-                  <Label>Comuna</Label>
-                  <Select
-                    value={formData.comuna_4 || ''}
-                    onChange={(e) => handleInputChange('comuna_4', e.target.value ? Number(e.target.value) : null)}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {comunas.map(comuna => (
-                      <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
-                    ))}
-                  </Select>
-                </FormGroup>
-              )}
+              <FormGroup>
+                <Label>Comuna</Label>
+                <Select
+                  value={formData.comuna_4 || ''}
+                  onChange={(e) => handleInputChange('comuna_4', e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Seleccionar...</option>
+                  {comunas.map(comuna => (
+                    <option key={String(comuna.id)} value={comuna.id}>{comuna.nombre || comuna.id}</option>
+                  ))}
+                </Select>
+              </FormGroup>
               <FormGroup>
                 <Label>Dirección</Label>
                 <Input
@@ -800,10 +1127,46 @@ export function MuestraModal({
                   ))}
                 </Select>
               </FormGroup>
+              {/* Fecha de Corte 4 - Solo roles 13, 14 */}
+              {puedeVerFechaCorte && (
+                <FormGroup>
+                  <Label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.check_fecha_corte_4}
+                      onChange={(e) => handleInputChange('check_fecha_corte_4', e.target.checked)}
+                    />
+                    Fecha de Corte
+                  </Label>
+                  {formData.check_fecha_corte_4 && (
+                    <Input
+                      type="date"
+                      value={formData.fecha_corte_4}
+                      onChange={(e) => handleInputChange('fecha_corte_4', e.target.value)}
+                    />
+                  )}
+                </FormGroup>
+              )}
+              {/* Planta de Corte 4 - Solo roles 5, 6, 13, 14 */}
+              {puedeVerPlantaCorte && (
+                <FormGroup>
+                  <Label>Planta de Corte</Label>
+                  <Select
+                    value={formData.sala_corte_4 || ''}
+                    onChange={(e) => handleInputChange('sala_corte_4', e.target.value ? Number(e.target.value) : null)}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {salasCortes.map(sala => (
+                      <option key={String(sala.id)} value={sala.id}>{sala.nombre || sala.id}</option>
+                    ))}
+                  </Select>
+                </FormGroup>
+              )}
             </FormGrid>
           </DestinoSection>
         </CardBody>
       </FormCard>
+      )}
 
       {/* Botones */}
       <ButtonGroup>

@@ -867,6 +867,8 @@ export interface ContactoOption {
   cargo?: string;  // Issue 6: Incluir cargo del contacto
   email?: string;
   telefono?: string;
+  comuna_id?: number;   // Para autocompletar en Envío Cliente VB
+  direccion?: string;   // Para autocompletar en Envío Cliente VB
 }
 
 export interface InstalacionInfo {
@@ -1438,12 +1440,36 @@ export interface InstallationCreate {
   pais_mercado_destino?: number;
   certificado_calidad?: number;
   active?: number;
-  // Contactos opcionales
+  // Contacto 1
   nombre_contacto?: string;
   cargo_contacto?: string;
   email_contacto?: string;
   phone_contacto?: string;
   direccion_contacto?: string;
+  // Contacto 2
+  nombre_contacto_2?: string;
+  cargo_contacto_2?: string;
+  email_contacto_2?: string;
+  phone_contacto_2?: string;
+  direccion_contacto_2?: string;
+  // Contacto 3
+  nombre_contacto_3?: string;
+  cargo_contacto_3?: string;
+  email_contacto_3?: string;
+  phone_contacto_3?: string;
+  direccion_contacto_3?: string;
+  // Contacto 4
+  nombre_contacto_4?: string;
+  cargo_contacto_4?: string;
+  email_contacto_4?: string;
+  phone_contacto_4?: string;
+  direccion_contacto_4?: string;
+  // Contacto 5
+  nombre_contacto_5?: string;
+  cargo_contacto_5?: string;
+  email_contacto_5?: string;
+  phone_contacto_5?: string;
+  direccion_contacto_5?: string;
 }
 
 export interface InstallationUpdate {
@@ -1459,12 +1485,36 @@ export interface InstallationUpdate {
   pais_mercado_destino?: number;
   certificado_calidad?: number;
   active?: number;
-  // Contactos opcionales
+  // Contacto 1
   nombre_contacto?: string;
   cargo_contacto?: string;
   email_contacto?: string;
   phone_contacto?: string;
   direccion_contacto?: string;
+  // Contacto 2
+  nombre_contacto_2?: string;
+  cargo_contacto_2?: string;
+  email_contacto_2?: string;
+  phone_contacto_2?: string;
+  direccion_contacto_2?: string;
+  // Contacto 3
+  nombre_contacto_3?: string;
+  cargo_contacto_3?: string;
+  email_contacto_3?: string;
+  phone_contacto_3?: string;
+  direccion_contacto_3?: string;
+  // Contacto 4
+  nombre_contacto_4?: string;
+  cargo_contacto_4?: string;
+  email_contacto_4?: string;
+  phone_contacto_4?: string;
+  direccion_contacto_4?: string;
+  // Contacto 5
+  nombre_contacto_5?: string;
+  cargo_contacto_5?: string;
+  email_contacto_5?: string;
+  phone_contacto_5?: string;
+  direccion_contacto_5?: string;
 }
 
 export interface InstallationResponse {

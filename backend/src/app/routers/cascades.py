@@ -63,12 +63,14 @@ class InstalacionOption(BaseModel):
 
 
 class ContactoOption(BaseModel):
-    """Opción de contacto. Issues 6, 7: Incluir cargo."""
+    """Opción de contacto. Issues 6, 7: Incluir cargo, comuna, dirección."""
     id: int
     nombre: str
     cargo: Optional[str] = None  # Issue 6: Campo faltante
     email: Optional[EmailStr] = None
     telefono: Optional[str] = None
+    comuna_id: Optional[int] = None  # Para autocompletar en Envío Cliente VB
+    direccion: Optional[str] = None  # Para autocompletar en Envío Cliente VB
 
 
 class InstalacionInfo(BaseModel):
@@ -205,14 +207,14 @@ async def get_contactos_cliente(
 
             if instalacion_id:
                 # Obtener contactos embebidos en la instalación
-                # Issue 6, 7: Incluir cargo_contacto según Laravel ClientController líneas 300-347
+                # Issue 6, 7: Incluir cargo_contacto, comuna_contacto, direccion_contacto según Laravel ClientController líneas 300-347
                 cursor.execute("""
                     SELECT
-                        nombre_contacto, cargo_contacto, email_contacto, phone_contacto,
-                        nombre_contacto_2, cargo_contacto_2, email_contacto_2, phone_contacto_2,
-                        nombre_contacto_3, cargo_contacto_3, email_contacto_3, phone_contacto_3,
-                        nombre_contacto_4, cargo_contacto_4, email_contacto_4, phone_contacto_4,
-                        nombre_contacto_5, cargo_contacto_5, email_contacto_5, phone_contacto_5
+                        nombre_contacto, cargo_contacto, email_contacto, phone_contacto, comuna_contacto, direccion_contacto,
+                        nombre_contacto_2, cargo_contacto_2, email_contacto_2, phone_contacto_2, comuna_contacto_2, direccion_contacto_2,
+                        nombre_contacto_3, cargo_contacto_3, email_contacto_3, phone_contacto_3, comuna_contacto_3, direccion_contacto_3,
+                        nombre_contacto_4, cargo_contacto_4, email_contacto_4, phone_contacto_4, comuna_contacto_4, direccion_contacto_4,
+                        nombre_contacto_5, cargo_contacto_5, email_contacto_5, phone_contacto_5, comuna_contacto_5, direccion_contacto_5
                     FROM installations
                     WHERE id = %s AND client_id = %s
                 """, (instalacion_id, client_id))
@@ -229,18 +231,20 @@ async def get_contactos_cliente(
                                 nombre=nombre,
                                 cargo=row.get(f"cargo_contacto{suffix}"),  # Issue 6
                                 email=row.get(f"email_contacto{suffix}"),
-                                telefono=row.get(f"phone_contacto{suffix}")
+                                telefono=row.get(f"phone_contacto{suffix}"),
+                                comuna_id=row.get(f"comuna_contacto{suffix}"),  # Para autocompletar
+                                direccion=row.get(f"direccion_contacto{suffix}")  # Para autocompletar
                             ))
             else:
                 # Sin instalación, obtener contactos embebidos del cliente
                 # Nota: Contacto 1 es 'nombre_contacto', contactos 2-5 son 'nombre_contacto_2', etc.
                 cursor.execute("""
                     SELECT
-                        nombre_contacto, cargo_contacto, email_contacto, phone_contacto, active_contacto,
-                        nombre_contacto_2, cargo_contacto_2, email_contacto_2, phone_contacto_2, active_contacto_2,
-                        nombre_contacto_3, cargo_contacto_3, email_contacto_3, phone_contacto_3, active_contacto_3,
-                        nombre_contacto_4, cargo_contacto_4, email_contacto_4, phone_contacto_4, active_contacto_4,
-                        nombre_contacto_5, cargo_contacto_5, email_contacto_5, phone_contacto_5, active_contacto_5
+                        nombre_contacto, cargo_contacto, email_contacto, phone_contacto, active_contacto, comuna_contacto, direccion_contacto,
+                        nombre_contacto_2, cargo_contacto_2, email_contacto_2, phone_contacto_2, active_contacto_2, comuna_contacto_2, direccion_contacto_2,
+                        nombre_contacto_3, cargo_contacto_3, email_contacto_3, phone_contacto_3, active_contacto_3, comuna_contacto_3, direccion_contacto_3,
+                        nombre_contacto_4, cargo_contacto_4, email_contacto_4, phone_contacto_4, active_contacto_4, comuna_contacto_4, direccion_contacto_4,
+                        nombre_contacto_5, cargo_contacto_5, email_contacto_5, phone_contacto_5, active_contacto_5, comuna_contacto_5, direccion_contacto_5
                     FROM clients
                     WHERE id = %s
                 """, (client_id,))
@@ -253,7 +257,9 @@ async def get_contactos_cliente(
                             nombre=row["nombre_contacto"],
                             cargo=row.get("cargo_contacto"),
                             email=row.get("email_contacto"),
-                            telefono=row.get("phone_contacto")
+                            telefono=row.get("phone_contacto"),
+                            comuna_id=row.get("comuna_contacto"),
+                            direccion=row.get("direccion_contacto")
                         ))
                     # Contactos 2-5
                     for i in range(2, 6):
@@ -265,7 +271,9 @@ async def get_contactos_cliente(
                                 nombre=nombre,
                                 cargo=row.get(f"cargo_contacto_{i}"),
                                 email=row.get(f"email_contacto_{i}"),
-                                telefono=row.get(f"phone_contacto_{i}")
+                                telefono=row.get(f"phone_contacto_{i}"),
+                                comuna_id=row.get(f"comuna_contacto_{i}"),
+                                direccion=row.get(f"direccion_contacto_{i}")
                             ))
 
             return contactos

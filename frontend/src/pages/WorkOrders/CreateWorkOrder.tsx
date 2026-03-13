@@ -878,6 +878,10 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
   const { data: filterOptions, isLoading: optionsLoading } = useWorkOrderFilterOptions();
   const { data: formOptions, isLoading: formOptionsLoading } = useFormOptionsComplete();
 
+  // DEBUG: Log para verificar que formOptions se carga correctamente
+  console.log('CreateWorkOrder formOptions:', formOptionsLoading ? 'Loading...' :
+    formOptions ? `cads=${formOptions.cads?.length || 0}, cartons=${formOptions.cartons?.length || 0}, cartons_muestra=${formOptions.cartons_muestra?.length || 0}, comunas=${formOptions.comunas?.length || 0}, salas_corte=${formOptions.salas_corte?.length || 0}` : 'undefined');
+
   // Filtrar subjerarquías basado en jerarquía seleccionada
   const filteredSubhierarchies = useMemo(() => {
     if (!formOptions?.subhierarchies || !formState.hierarchy_id) return [];
@@ -912,13 +916,12 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
     }
   }, [formState.hierarchy_id]);
 
-  // Abrir modal de Crear Muestra automáticamente cuando se selecciona tipo_solicitud = 3 (Muestra con CAD)
-  // Igual que en Laravel ot-duplication.js línea 4261-4263
+  // Cuando se selecciona tipo_solicitud = 3 (Muestra con CAD), solo marcar el checkbox de muestra
+  // El usuario abrirá el modal manualmente haciendo clic en el checkbox de Muestra
+  // NOTA: NO abrir el modal automáticamente para permitir que el usuario seleccione cliente primero
   useEffect(() => {
     if (formState.tipo_solicitud === 3) {
-      // Abrir el modal de crear muestra
-      setShowMuestraModal(true);
-      // Marcar el checkbox de muestra automáticamente
+      // Solo marcar el checkbox de muestra, NO abrir el modal automáticamente
       setFormState(prev => ({
         ...prev,
         muestra: true,
@@ -2339,18 +2342,36 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
               </div>
 
               {formState.muestra && (
-                <FormGroup style={{ marginTop: '1rem' }}>
-                  <Label>N Muestras</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={formState.numero_muestras || ''}
-                    onChange={(e) => handleInputChange('numero_muestras', e.target.value ? Number(e.target.value) : null)}
-                    style={{ width: '100px' }}
-                    disabled
-                    readOnly
-                  />
-                </FormGroup>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                  <FormGroup>
+                    <Label>N Muestras</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={formState.numero_muestras || ''}
+                      onChange={(e) => handleInputChange('numero_muestras', e.target.value ? Number(e.target.value) : null)}
+                      style={{ width: '100px' }}
+                      disabled
+                      readOnly
+                    />
+                  </FormGroup>
+                  <button
+                    type="button"
+                    onClick={() => setShowMuestraModal(true)}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: theme.colors.primary,
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem',
+                      height: 'fit-content',
+                    }}
+                  >
+                    {formState.numero_muestras ? 'Editar Muestra' : 'Configurar Muestra'}
+                  </button>
+                </div>
               )}
             </SectionBody>
           </FormSection>
@@ -4298,8 +4319,6 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
       </form>
 
       {/* Modal de Crear Muestra */}
-      {/* DEBUG: Verificar datos de formOptions */}
-      {showMuestraModal && console.log('DEBUG MuestraModal: cads=' + (formOptions?.cads?.length || 0) + ', cartons=' + (formOptions?.cartons?.length || 0) + ', cartons_muestra=' + (formOptions?.cartons_muestra?.length || 0) + ', loading=' + formOptionsLoading)}
       <MuestraModal
         isOpen={showMuestraModal}
         onClose={() => {
@@ -4322,7 +4341,9 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
         cartones={formOptions?.cartons || []}
         cartonesMuestra={formOptions?.cartons_muestra || []}
         comunas={formOptions?.comunas || []}
+        salasCortes={formOptions?.salas_corte || []}
         roleId={getCurrentUserRole()}
+        contactosCliente={contactos}
       />
     </Container>
   );

@@ -70,6 +70,8 @@ class FormOptionsResponse(BaseModel):
     # Sprint 1 - OTs Especiales
     ajustes_area_desarrollo: List[SelectOption]
     tipos_solicitud: List[SelectOption]
+    # Muestras - Salas de Corte
+    salas_cortes: List[SelectOption]
 
 
 # =============================================================================
@@ -467,6 +469,31 @@ def get_recubrimiento_types_from_db() -> List[SelectOption]:
         return []
 
 
+def get_salas_cortes_from_db() -> List[SelectOption]:
+    """Obtiene salas de corte (plantas de corte para muestras) de la base de datos.
+    Fuente Laravel: SalaCorte::where('deleted', 0)->pluck('nombre', 'id')
+    Usado en: muestras-ot.blade.php línea 691 - Campo "Planta de Corte"
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, nombre
+            FROM salas_cortes
+            WHERE deleted = 0
+            ORDER BY nombre
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [
+            SelectOption(value=r['id'], label=r['nombre'])
+            for r in rows
+        ]
+    except Exception as e:
+        logger.error(f"Error fetching salas_cortes: {e}")
+        return []
+
+
 # =============================================================================
 # OPCIONES HARDCODEADAS (igual que en Laravel)
 # =============================================================================
@@ -553,6 +580,8 @@ async def get_all_options():
         # Sprint 1 - OTs Especiales (Hardcodeado)
         ajustes_area_desarrollo=AJUSTES_AREA_DESARROLLO,
         tipos_solicitud=TIPOS_SOLICITUD,
+        # Muestras - Salas de Corte (de BD)
+        salas_cortes=get_salas_cortes_from_db(),
     )
 
 
