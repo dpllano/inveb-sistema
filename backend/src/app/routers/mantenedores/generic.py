@@ -516,6 +516,84 @@ TABLA_CONFIG: Dict[str, Dict[str, Any]] = {
         "has_active": True,
         "display_name": "Protecciones de Pallet"
     },
+    # === SPRINT REVISION: Tablas críticas faltantes de Laravel ===
+    "states": {
+        "table": "states",
+        "nombre_field": "nombre",
+        "columns": ["id", "nombre", "work_space_id"],
+        "has_active": False,
+        "display_name": "Estados de OT"
+    },
+    "pallet_qas": {
+        "table": "pallet_qas",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Certificados de Calidad Pallet"
+    },
+    "pallet_tag_formats": {
+        "table": "pallet_tag_formats",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Formatos de Etiqueta Pallet"
+    },
+    "design_types": {
+        "table": "design_types",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "tipo", "complejidad", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Diseño"
+    },
+    "precut_types": {
+        "table": "precut_types",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Precorte"
+    },
+    "coverage_types": {
+        "table": "coverage_types",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Cobertura"
+    },
+    "impresion": {
+        "table": "impresion",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Impresión"
+    },
+    "ink_types": {
+        "table": "ink_types",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Tintas"
+    },
+    "print_type": {
+        "table": "print_type",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Impresión (Print)"
+    },
+    "food_types": {
+        "table": "food_types",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Alimentos"
+    },
+    "protection_type": {
+        "table": "protection_type",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "active"],
+        "has_active": True,
+        "display_name": "Tipos de Protección"
+    },
 }
 
 

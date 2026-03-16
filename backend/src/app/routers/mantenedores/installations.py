@@ -3,15 +3,25 @@ Router de Mantenedor de Instalaciones - INVEB Cascade Service
 CRUD completo para la tabla installations de MySQL Laravel.
 Issue 4: No se ven las instalaciones, no se pueden crear ni modificar.
 Fuente: Laravel ClientController lineas 179-234, 382-387, 278-365
+
+NOTA TABLA FSC:
+- En Laravel la tabla se llama 'fsc' (singular, NO 'fscs')
+- Migracion: 2021_09_15_105008_create_table_fsc.php
+- Modelo: app/Fsc.php con $table = 'fsc'
+- Contiene 7 opciones: No, Si, Sin FSC, Logo FSC solo EEII, etc.
+- Si la tabla no existe en Railway, se usa NULL como fallback.
 """
-from typing import Optional, List
+from typing import Optional, List, Union
 from fastapi import APIRouter, HTTPException, status, Query, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
 import pymysql
 import jwt
+import logging
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/mantenedores/installations", tags=["Mantenedor - Instalaciones"])
 security = HTTPBearer(auto_error=False)
@@ -51,6 +61,8 @@ def get_mysql_connection():
 # Schemas basados en migracion Laravel 2023_04_19_151737_create_installations_table.php
 class InstallationBase(BaseModel):
     """Campos base de instalacion."""
+    model_config = ConfigDict(extra='ignore')  # Ignorar campos extra de la BD
+
     nombre: Optional[str] = Field(None, max_length=255)
     tipo_pallet: Optional[int] = None
     altura_pallet: Optional[int] = None
@@ -63,10 +75,10 @@ class InstallationBase(BaseModel):
     pais_mercado_destino: Optional[int] = None
     certificado_calidad: Optional[int] = None
     active: Optional[int] = 1
-    # Contacto 1
+    # Contacto 1 - Usar str en lugar de EmailStr para evitar validacion estricta en respuestas
     nombre_contacto: Optional[str] = None
     cargo_contacto: Optional[str] = None
-    email_contacto: Optional[EmailStr] = None
+    email_contacto: Optional[str] = None
     phone_contacto: Optional[str] = None
     direccion_contacto: Optional[str] = None
     comuna_contacto: Optional[int] = None
@@ -74,7 +86,7 @@ class InstallationBase(BaseModel):
     # Contacto 2
     nombre_contacto_2: Optional[str] = None
     cargo_contacto_2: Optional[str] = None
-    email_contacto_2: Optional[EmailStr] = None
+    email_contacto_2: Optional[str] = None
     phone_contacto_2: Optional[str] = None
     direccion_contacto_2: Optional[str] = None
     comuna_contacto_2: Optional[int] = None
@@ -82,7 +94,7 @@ class InstallationBase(BaseModel):
     # Contacto 3
     nombre_contacto_3: Optional[str] = None
     cargo_contacto_3: Optional[str] = None
-    email_contacto_3: Optional[EmailStr] = None
+    email_contacto_3: Optional[str] = None
     phone_contacto_3: Optional[str] = None
     direccion_contacto_3: Optional[str] = None
     comuna_contacto_3: Optional[int] = None
@@ -90,7 +102,7 @@ class InstallationBase(BaseModel):
     # Contacto 4
     nombre_contacto_4: Optional[str] = None
     cargo_contacto_4: Optional[str] = None
-    email_contacto_4: Optional[EmailStr] = None
+    email_contacto_4: Optional[str] = None
     phone_contacto_4: Optional[str] = None
     direccion_contacto_4: Optional[str] = None
     comuna_contacto_4: Optional[int] = None
@@ -98,7 +110,7 @@ class InstallationBase(BaseModel):
     # Contacto 5
     nombre_contacto_5: Optional[str] = None
     cargo_contacto_5: Optional[str] = None
-    email_contacto_5: Optional[EmailStr] = None
+    email_contacto_5: Optional[str] = None
     phone_contacto_5: Optional[str] = None
     direccion_contacto_5: Optional[str] = None
     comuna_contacto_5: Optional[int] = None
@@ -123,6 +135,8 @@ class InstallationResponse(BaseModel):
 
 class InstallationListItem(BaseModel):
     """Item de lista de instalaciones."""
+    model_config = ConfigDict(extra='ignore')
+
     id: int
     nombre: Optional[str]
     client_id: int
@@ -134,15 +148,17 @@ class InstallationListItem(BaseModel):
 
 class InstallationDetail(InstallationBase):
     """Detalle completo de instalacion."""
+    model_config = ConfigDict(extra='ignore')  # Ignorar campos extra de la BD
+
     id: int
     client_id: int
-    tipo_pallet_nombre: Optional[str]
-    fsc_nombre: Optional[str]
-    formato_etiqueta_nombre: Optional[str]
-    certificado_calidad_nombre: Optional[str]
-    pais_nombre: Optional[str]
-    created_at: Optional[str]
-    updated_at: Optional[str]
+    tipo_pallet_nombre: Optional[str] = None
+    fsc_nombre: Optional[str] = None
+    formato_etiqueta_nombre: Optional[str] = None
+    certificado_calidad_nombre: Optional[str] = None
+    pais_nombre: Optional[str] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
 
 
 # Endpoints
@@ -152,64 +168,152 @@ async def get_installations_by_client(
     client_id: int,
     user_id: int = Depends(get_current_user_id)
 ):
-    """Obtiene instalaciones de un cliente. Usado en cascada Cliente -> Instalacion."""
+    """
+    Obtiene instalaciones de un cliente. Usado en cascada Cliente -> Instalacion.
+
+    NOTA: Intenta hacer JOIN con tabla 'fsc' (singular, como en Laravel).
+    Si la tabla no existe en Railway, usa NULL como fallback.
+    """
     connection = get_mysql_connection()
     try:
         with connection.cursor() as cursor:
+            # Verificar si existe la tabla fsc (nombre correcto de Laravel)
             cursor.execute("""
-                SELECT
-                    i.id,
-                    i.nombre,
-                    i.client_id,
-                    pt.descripcion as tipo_pallet_nombre,
-                    f.descripcion as fsc_nombre,
-                    p.name as pais_nombre,
-                    i.active
-                FROM installations i
-                LEFT JOIN pallet_types pt ON i.tipo_pallet = pt.id
-                LEFT JOIN fscs f ON i.fsc = f.codigo
-                LEFT JOIN paises p ON i.pais_mercado_destino = p.id
-                WHERE i.client_id = %s AND i.deleted = 0
-                ORDER BY i.nombre
-            """, (client_id,))
+                SELECT COUNT(*) as existe FROM information_schema.tables
+                WHERE table_schema = DATABASE() AND table_name = 'fsc'
+            """)
+            fsc_exists = cursor.fetchone()['existe'] > 0
+
+            if fsc_exists:
+                # Query completa con JOIN a tabla fsc
+                cursor.execute("""
+                    SELECT
+                        i.id,
+                        i.nombre,
+                        i.client_id,
+                        pt.descripcion as tipo_pallet_nombre,
+                        f.descripcion as fsc_nombre,
+                        p.name as pais_nombre,
+                        i.active
+                    FROM installations i
+                    LEFT JOIN pallet_types pt ON i.tipo_pallet = pt.id
+                    LEFT JOIN fsc f ON i.fsc = f.codigo
+                    LEFT JOIN paises p ON i.pais_mercado_destino = p.id
+                    WHERE i.client_id = %s AND i.deleted = 0
+                    ORDER BY i.nombre
+                """, (client_id,))
+            else:
+                # Fallback sin tabla fsc
+                logger.warning("Tabla 'fsc' no existe en la BD. Usando NULL como fallback.")
+                cursor.execute("""
+                    SELECT
+                        i.id,
+                        i.nombre,
+                        i.client_id,
+                        pt.descripcion as tipo_pallet_nombre,
+                        NULL as fsc_nombre,
+                        p.name as pais_nombre,
+                        i.active
+                    FROM installations i
+                    LEFT JOIN pallet_types pt ON i.tipo_pallet = pt.id
+                    LEFT JOIN paises p ON i.pais_mercado_destino = p.id
+                    WHERE i.client_id = %s AND i.deleted = 0
+                    ORDER BY i.nombre
+                """, (client_id,))
+
             return cursor.fetchall()
     finally:
         connection.close()
 
 
-@router.get("/{installation_id}", response_model=InstallationDetail)
+@router.get("/{installation_id}")
 async def get_installation(
     installation_id: int,
     user_id: int = Depends(get_current_user_id)
 ):
-    """Obtiene detalle de una instalacion. Equivalente a Laravel edit_installation()."""
+    """
+    Obtiene detalle de una instalacion. Equivalente a Laravel edit_installation().
+
+    NOTA: Intenta hacer JOIN con tabla 'fsc' (singular, como en Laravel).
+    Si la tabla no existe, usa NULL como fallback.
+    Devuelve dict directamente para evitar errores de validación Pydantic.
+    """
     connection = get_mysql_connection()
     try:
         with connection.cursor() as cursor:
+            # Verificar si existe la tabla fsc
             cursor.execute("""
-                SELECT
-                    i.*,
-                    pt.descripcion as tipo_pallet_nombre,
-                    f.descripcion as fsc_nombre,
-                    pf.descripcion as formato_etiqueta_nombre,
-                    pq.descripcion as certificado_calidad_nombre,
-                    p.name as pais_nombre,
-                    DATE_FORMAT(i.created_at, '%%Y-%%m-%%d %%H:%%i') as created_at,
-                    DATE_FORMAT(i.updated_at, '%%Y-%%m-%%d %%H:%%i') as updated_at
-                FROM installations i
-                LEFT JOIN pallet_types pt ON i.tipo_pallet = pt.id
-                LEFT JOIN fscs f ON i.fsc = f.codigo
-                LEFT JOIN pallet_tag_formats pf ON i.formato_etiqueta = pf.id
-                LEFT JOIN pallet_qas pq ON i.certificado_calidad = pq.id
-                LEFT JOIN paises p ON i.pais_mercado_destino = p.id
-                WHERE i.id = %s AND i.deleted = 0
-            """, (installation_id,))
+                SELECT COUNT(*) as existe FROM information_schema.tables
+                WHERE table_schema = DATABASE() AND table_name = 'fsc'
+            """)
+            fsc_exists = cursor.fetchone()['existe'] > 0
+
+            if fsc_exists:
+                cursor.execute("""
+                    SELECT
+                        i.*,
+                        pt.descripcion as tipo_pallet_nombre,
+                        f.descripcion as fsc_nombre,
+                        pf.descripcion as formato_etiqueta_nombre,
+                        pq.descripcion as certificado_calidad_nombre,
+                        p.name as pais_nombre,
+                        DATE_FORMAT(i.created_at, '%%Y-%%m-%%d %%H:%%i') as created_at,
+                        DATE_FORMAT(i.updated_at, '%%Y-%%m-%%d %%H:%%i') as updated_at
+                    FROM installations i
+                    LEFT JOIN pallet_types pt ON i.tipo_pallet = pt.id
+                    LEFT JOIN fsc f ON i.fsc = f.codigo
+                    LEFT JOIN pallet_tag_formats pf ON i.formato_etiqueta = pf.id
+                    LEFT JOIN pallet_qas pq ON i.certificado_calidad = pq.id
+                    LEFT JOIN paises p ON i.pais_mercado_destino = p.id
+                    WHERE i.id = %s AND i.deleted = 0
+                """, (installation_id,))
+            else:
+                logger.warning("Tabla 'fsc' no existe en la BD. Usando NULL como fallback.")
+                cursor.execute("""
+                    SELECT
+                        i.*,
+                        pt.descripcion as tipo_pallet_nombre,
+                        NULL as fsc_nombre,
+                        pf.descripcion as formato_etiqueta_nombre,
+                        pq.descripcion as certificado_calidad_nombre,
+                        p.name as pais_nombre,
+                        DATE_FORMAT(i.created_at, '%%Y-%%m-%%d %%H:%%i') as created_at,
+                        DATE_FORMAT(i.updated_at, '%%Y-%%m-%%d %%H:%%i') as updated_at
+                    FROM installations i
+                    LEFT JOIN pallet_types pt ON i.tipo_pallet = pt.id
+                    LEFT JOIN pallet_tag_formats pf ON i.formato_etiqueta = pf.id
+                    LEFT JOIN pallet_qas pq ON i.certificado_calidad = pq.id
+                    LEFT JOIN paises p ON i.pais_mercado_destino = p.id
+                    WHERE i.id = %s AND i.deleted = 0
+                """, (installation_id,))
 
             installation = cursor.fetchone()
             if not installation:
                 raise HTTPException(status_code=404, detail="Instalacion no encontrada")
 
-            return installation
+            # Convertir a dict y limpiar valores para evitar errores de serialización
+            result = dict(installation)
+            # Asegurar que campos string no sean None cuando deberían ser string vacío
+            string_fields = [
+                'nombre', 'nombre_contacto', 'cargo_contacto', 'email_contacto',
+                'phone_contacto', 'direccion_contacto', 'active_contacto',
+                'nombre_contacto_2', 'cargo_contacto_2', 'email_contacto_2',
+                'phone_contacto_2', 'direccion_contacto_2', 'active_contacto_2',
+                'nombre_contacto_3', 'cargo_contacto_3', 'email_contacto_3',
+                'phone_contacto_3', 'direccion_contacto_3', 'active_contacto_3',
+                'nombre_contacto_4', 'cargo_contacto_4', 'email_contacto_4',
+                'phone_contacto_4', 'direccion_contacto_4', 'active_contacto_4',
+                'nombre_contacto_5', 'cargo_contacto_5', 'email_contacto_5',
+                'phone_contacto_5', 'direccion_contacto_5', 'active_contacto_5',
+            ]
+            for field in string_fields:
+                if field in result and result[field] is None:
+                    result[field] = ''
+
+            return result
+    except Exception as e:
+        logger.error(f"Error obteniendo instalacion {installation_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
     finally:
         connection.close()
 

@@ -2,7 +2,7 @@
 Router de Mantenedor de Clientes - INVEB Cascade Service
 CRUD completo para la tabla clients de MySQL Laravel.
 """
-from typing import Optional, List
+from typing import Optional, List, Union, Any
 from fastapi import APIRouter, HTTPException, status, Query, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field, EmailStr, field_validator
@@ -135,7 +135,7 @@ class ClientDetail(BaseModel):
     phone_contacto_1: Optional[str]
     comuna_contacto_1: Optional[int]
     direccion_contacto_1: Optional[str]
-    active_contacto_1: Optional[str]
+    active_contacto_1: Optional[Union[int, str]] = None  # Puede ser 0/1 o "activo"/"inactivo"
     # Contacto 2
     nombre_contacto_2: Optional[str]
     cargo_contacto_2: Optional[str]
@@ -143,7 +143,7 @@ class ClientDetail(BaseModel):
     phone_contacto_2: Optional[str]
     comuna_contacto_2: Optional[int]
     direccion_contacto_2: Optional[str]
-    active_contacto_2: Optional[str]
+    active_contacto_2: Optional[Union[int, str]] = None
     # Contacto 3
     nombre_contacto_3: Optional[str]
     cargo_contacto_3: Optional[str]
@@ -151,7 +151,7 @@ class ClientDetail(BaseModel):
     phone_contacto_3: Optional[str]
     comuna_contacto_3: Optional[int]
     direccion_contacto_3: Optional[str]
-    active_contacto_3: Optional[str]
+    active_contacto_3: Optional[Union[int, str]] = None
     # Contacto 4
     nombre_contacto_4: Optional[str]
     cargo_contacto_4: Optional[str]
@@ -159,7 +159,7 @@ class ClientDetail(BaseModel):
     phone_contacto_4: Optional[str]
     comuna_contacto_4: Optional[int]
     direccion_contacto_4: Optional[str]
-    active_contacto_4: Optional[str]
+    active_contacto_4: Optional[Union[int, str]] = None
     # Contacto 5
     nombre_contacto_5: Optional[str]
     cargo_contacto_5: Optional[str]
@@ -167,7 +167,7 @@ class ClientDetail(BaseModel):
     phone_contacto_5: Optional[str]
     comuna_contacto_5: Optional[int]
     direccion_contacto_5: Optional[str]
-    active_contacto_5: Optional[str]
+    active_contacto_5: Optional[Union[int, str]] = None
     # Clasificacion y estado
     clasificacion_id: Optional[int]
     clasificacion_nombre: Optional[str]
@@ -184,43 +184,43 @@ class ClientCreate(BaseModel):
     # Contacto 1
     nombre_contacto_1: Optional[str] = Field(None, max_length=255)
     cargo_contacto_1: Optional[str] = Field(None, max_length=255)
-    email_contacto_1: Optional[EmailStr] = None
+    email_contacto_1: Optional[str] = None
     phone_contacto_1: Optional[str] = Field(None, max_length=20)
     comuna_contacto_1: Optional[int] = None
     direccion_contacto_1: Optional[str] = Field(None, max_length=255)
-    active_contacto_1: Optional[str] = Field(None, max_length=20)
+    active_contacto_1: Optional[Union[int, str]] = None
     # Contacto 2
     nombre_contacto_2: Optional[str] = Field(None, max_length=255)
     cargo_contacto_2: Optional[str] = Field(None, max_length=255)
-    email_contacto_2: Optional[EmailStr] = None
+    email_contacto_2: Optional[str] = None
     phone_contacto_2: Optional[str] = Field(None, max_length=20)
     comuna_contacto_2: Optional[int] = None
     direccion_contacto_2: Optional[str] = Field(None, max_length=255)
-    active_contacto_2: Optional[str] = Field(None, max_length=20)
+    active_contacto_2: Optional[Union[int, str]] = None
     # Contacto 3
     nombre_contacto_3: Optional[str] = Field(None, max_length=255)
     cargo_contacto_3: Optional[str] = Field(None, max_length=255)
-    email_contacto_3: Optional[EmailStr] = None
+    email_contacto_3: Optional[str] = None
     phone_contacto_3: Optional[str] = Field(None, max_length=20)
     comuna_contacto_3: Optional[int] = None
     direccion_contacto_3: Optional[str] = Field(None, max_length=255)
-    active_contacto_3: Optional[str] = Field(None, max_length=20)
+    active_contacto_3: Optional[Union[int, str]] = None
     # Contacto 4
     nombre_contacto_4: Optional[str] = Field(None, max_length=255)
     cargo_contacto_4: Optional[str] = Field(None, max_length=255)
-    email_contacto_4: Optional[EmailStr] = None
+    email_contacto_4: Optional[str] = None
     phone_contacto_4: Optional[str] = Field(None, max_length=20)
     comuna_contacto_4: Optional[int] = None
     direccion_contacto_4: Optional[str] = Field(None, max_length=255)
-    active_contacto_4: Optional[str] = Field(None, max_length=20)
+    active_contacto_4: Optional[Union[int, str]] = None
     # Contacto 5
     nombre_contacto_5: Optional[str] = Field(None, max_length=255)
     cargo_contacto_5: Optional[str] = Field(None, max_length=255)
-    email_contacto_5: Optional[EmailStr] = None
+    email_contacto_5: Optional[str] = None
     phone_contacto_5: Optional[str] = Field(None, max_length=20)
     comuna_contacto_5: Optional[int] = None
     direccion_contacto_5: Optional[str] = Field(None, max_length=255)
-    active_contacto_5: Optional[str] = Field(None, max_length=20)
+    active_contacto_5: Optional[Union[int, str]] = None
     # Clasificacion
     clasificacion_id: Optional[int] = None
 
@@ -249,43 +249,43 @@ class ClientUpdate(BaseModel):
     # Contacto 1
     nombre_contacto_1: Optional[str] = Field(None, max_length=255)
     cargo_contacto_1: Optional[str] = Field(None, max_length=255)
-    email_contacto_1: Optional[EmailStr] = None
+    email_contacto_1: Optional[str] = None
     phone_contacto_1: Optional[str] = Field(None, max_length=20)
     comuna_contacto_1: Optional[int] = None
     direccion_contacto_1: Optional[str] = Field(None, max_length=255)
-    active_contacto_1: Optional[str] = Field(None, max_length=20)
+    active_contacto_1: Optional[Union[int, str]] = None
     # Contacto 2
     nombre_contacto_2: Optional[str] = Field(None, max_length=255)
     cargo_contacto_2: Optional[str] = Field(None, max_length=255)
-    email_contacto_2: Optional[EmailStr] = None
+    email_contacto_2: Optional[str] = None
     phone_contacto_2: Optional[str] = Field(None, max_length=20)
     comuna_contacto_2: Optional[int] = None
     direccion_contacto_2: Optional[str] = Field(None, max_length=255)
-    active_contacto_2: Optional[str] = Field(None, max_length=20)
+    active_contacto_2: Optional[Union[int, str]] = None
     # Contacto 3
     nombre_contacto_3: Optional[str] = Field(None, max_length=255)
     cargo_contacto_3: Optional[str] = Field(None, max_length=255)
-    email_contacto_3: Optional[EmailStr] = None
+    email_contacto_3: Optional[str] = None
     phone_contacto_3: Optional[str] = Field(None, max_length=20)
     comuna_contacto_3: Optional[int] = None
     direccion_contacto_3: Optional[str] = Field(None, max_length=255)
-    active_contacto_3: Optional[str] = Field(None, max_length=20)
+    active_contacto_3: Optional[Union[int, str]] = None
     # Contacto 4
     nombre_contacto_4: Optional[str] = Field(None, max_length=255)
     cargo_contacto_4: Optional[str] = Field(None, max_length=255)
-    email_contacto_4: Optional[EmailStr] = None
+    email_contacto_4: Optional[str] = None
     phone_contacto_4: Optional[str] = Field(None, max_length=20)
     comuna_contacto_4: Optional[int] = None
     direccion_contacto_4: Optional[str] = Field(None, max_length=255)
-    active_contacto_4: Optional[str] = Field(None, max_length=20)
+    active_contacto_4: Optional[Union[int, str]] = None
     # Contacto 5
     nombre_contacto_5: Optional[str] = Field(None, max_length=255)
     cargo_contacto_5: Optional[str] = Field(None, max_length=255)
-    email_contacto_5: Optional[EmailStr] = None
+    email_contacto_5: Optional[str] = None
     phone_contacto_5: Optional[str] = Field(None, max_length=20)
     comuna_contacto_5: Optional[int] = None
     direccion_contacto_5: Optional[str] = Field(None, max_length=255)
-    active_contacto_5: Optional[str] = Field(None, max_length=20)
+    active_contacto_5: Optional[Union[int, str]] = None
     # Clasificacion
     clasificacion_id: Optional[int] = None
 

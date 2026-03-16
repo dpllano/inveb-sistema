@@ -7,7 +7,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Set API URL for production build (will be overridden by Railway env vars)
-ARG VITE_API_URL=https://inveb-sistema-production.up.railway.app/api/v1
+ARG VITE_API_URL=https://inveb-api-production-a923.up.railway.app/api/v1
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_ENV=production
 

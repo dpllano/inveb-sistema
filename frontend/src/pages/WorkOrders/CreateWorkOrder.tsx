@@ -4,6 +4,7 @@
  * Basado en el diseño de Laravel ficha-form.blade.php con estilos Monitor One
  *
  * Sprint K: Migrado a React Hook Form + Yup para validación
+ * Build: 2026-03-16-v2 - Fix modal muestra no abrir automaticamente
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';

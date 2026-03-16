@@ -2,6 +2,8 @@
  * MuestraModal Component
  * Modal para crear una muestra asociada a una OT
  * Basado en muestras-ot.blade.php y ot-muestras.js de Laravel
+ *
+ * Build: 2026-03-16-v2 - Fix comunas y contactos
  */
 
 import { useState, useCallback, useMemo } from 'react';

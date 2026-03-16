@@ -6,7 +6,7 @@
  * Soporta posicionamiento, contenido HTML y estilos personalizados.
  */
 
-import { useState, useRef, useEffect, ReactNode, CSSProperties } from 'react';
+import { useState, useRef, useEffect, ReactNode } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
 
@@ -154,7 +154,7 @@ export function Tooltip({
   className,
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showTooltip = () => {
     if (disabled) return;

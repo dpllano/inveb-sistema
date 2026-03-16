@@ -6,7 +6,7 @@
  * Replica el comportamiento de Laravel para visualización de archivos.
  */
 
-import { useState, useMemo, ReactNode } from 'react';
+import { useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
 import { Tooltip, ActionTooltip } from './Tooltip';
@@ -359,7 +359,7 @@ const ActionButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover {
-    background: ${theme.colors.backgroundLight};
+    background: ${theme.colors.bgLight};
   }
 
   &.delete:hover {
@@ -576,12 +576,12 @@ const UploadArea = styled.label<{ $disabled: boolean }>`
   border: 2px dashed ${({ $disabled }) => $disabled ? theme.colors.border : theme.colors.primary}50;
   border-radius: 8px;
   cursor: ${({ $disabled }) => $disabled ? 'not-allowed' : 'pointer'};
-  background: ${({ $disabled }) => $disabled ? theme.colors.backgroundLight : 'white'};
+  background: ${({ $disabled }) => $disabled ? theme.colors.bgLight : 'white'};
   transition: all 0.15s ease;
 
   &:hover {
     border-color: ${({ $disabled }) => $disabled ? theme.colors.border : theme.colors.primary};
-    background: ${({ $disabled }) => $disabled ? theme.colors.backgroundLight : `${theme.colors.primary}05`};
+    background: ${({ $disabled }) => $disabled ? theme.colors.bgLight : `${theme.colors.primary}05`};
   }
 `;
 

@@ -3,6 +3,7 @@
  * Formulario para crear/editar instalaciones de cliente
  * Issue 4: CRUD de instalaciones en mantenedor
  * Fuente Laravel: ClientController store_installation, edit_installation, update_installation
+ * CORREGIDO: Soporte para 5 contactos (extraído de Laravel migrations)
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -31,7 +32,7 @@ const FormHeader = styled.div`
 
 const FormBody = styled.div`
   padding: 1.5rem;
-  max-height: 60vh;
+  max-height: 70vh;
   overflow-y: auto;
 `;
 
@@ -179,6 +180,30 @@ const CloseButton = styled.button`
   }
 `;
 
+const ContactSection = styled.div`
+  background: ${theme.colors.bgLight};
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+`;
+
+const ContactGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ContactTitle = styled.h4`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${theme.colors.textPrimary};
+  margin: 0 0 0.75rem 0;
+`;
+
 // Types
 interface InstallationFormProps {
   installation: InstallationDetail | null;
@@ -203,7 +228,7 @@ export default function InstallationForm({
 }: InstallationFormProps) {
   const isEditing = !!installation;
 
-  // Form state
+  // Form state - Incluye los 5 contactos según Laravel
   const [formData, setFormData] = useState({
     nombre: installation?.nombre || '',
     tipo_pallet: installation?.tipo_pallet || null,
@@ -216,12 +241,36 @@ export default function InstallationForm({
     fsc: installation?.fsc || null,
     pais_mercado_destino: installation?.pais_mercado_destino || null,
     certificado_calidad: installation?.certificado_calidad || null,
-    // Contacto principal
+    // Contacto 1
     nombre_contacto: installation?.nombre_contacto || '',
     cargo_contacto: installation?.cargo_contacto || '',
     email_contacto: installation?.email_contacto || '',
     phone_contacto: installation?.phone_contacto || '',
     direccion_contacto: installation?.direccion_contacto || '',
+    // Contacto 2
+    nombre_contacto_2: installation?.nombre_contacto_2 || '',
+    cargo_contacto_2: installation?.cargo_contacto_2 || '',
+    email_contacto_2: installation?.email_contacto_2 || '',
+    phone_contacto_2: installation?.phone_contacto_2 || '',
+    direccion_contacto_2: installation?.direccion_contacto_2 || '',
+    // Contacto 3
+    nombre_contacto_3: installation?.nombre_contacto_3 || '',
+    cargo_contacto_3: installation?.cargo_contacto_3 || '',
+    email_contacto_3: installation?.email_contacto_3 || '',
+    phone_contacto_3: installation?.phone_contacto_3 || '',
+    direccion_contacto_3: installation?.direccion_contacto_3 || '',
+    // Contacto 4
+    nombre_contacto_4: installation?.nombre_contacto_4 || '',
+    cargo_contacto_4: installation?.cargo_contacto_4 || '',
+    email_contacto_4: installation?.email_contacto_4 || '',
+    phone_contacto_4: installation?.phone_contacto_4 || '',
+    direccion_contacto_4: installation?.direccion_contacto_4 || '',
+    // Contacto 5
+    nombre_contacto_5: installation?.nombre_contacto_5 || '',
+    cargo_contacto_5: installation?.cargo_contacto_5 || '',
+    email_contacto_5: installation?.email_contacto_5 || '',
+    phone_contacto_5: installation?.phone_contacto_5 || '',
+    direccion_contacto_5: installation?.direccion_contacto_5 || '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -242,11 +291,36 @@ export default function InstallationForm({
         fsc: installation.fsc,
         pais_mercado_destino: installation.pais_mercado_destino,
         certificado_calidad: installation.certificado_calidad,
+        // Contacto 1
         nombre_contacto: installation.nombre_contacto || '',
         cargo_contacto: installation.cargo_contacto || '',
         email_contacto: installation.email_contacto || '',
         phone_contacto: installation.phone_contacto || '',
         direccion_contacto: installation.direccion_contacto || '',
+        // Contacto 2
+        nombre_contacto_2: installation.nombre_contacto_2 || '',
+        cargo_contacto_2: installation.cargo_contacto_2 || '',
+        email_contacto_2: installation.email_contacto_2 || '',
+        phone_contacto_2: installation.phone_contacto_2 || '',
+        direccion_contacto_2: installation.direccion_contacto_2 || '',
+        // Contacto 3
+        nombre_contacto_3: installation.nombre_contacto_3 || '',
+        cargo_contacto_3: installation.cargo_contacto_3 || '',
+        email_contacto_3: installation.email_contacto_3 || '',
+        phone_contacto_3: installation.phone_contacto_3 || '',
+        direccion_contacto_3: installation.direccion_contacto_3 || '',
+        // Contacto 4
+        nombre_contacto_4: installation.nombre_contacto_4 || '',
+        cargo_contacto_4: installation.cargo_contacto_4 || '',
+        email_contacto_4: installation.email_contacto_4 || '',
+        phone_contacto_4: installation.phone_contacto_4 || '',
+        direccion_contacto_4: installation.direccion_contacto_4 || '',
+        // Contacto 5
+        nombre_contacto_5: installation.nombre_contacto_5 || '',
+        cargo_contacto_5: installation.cargo_contacto_5 || '',
+        email_contacto_5: installation.email_contacto_5 || '',
+        phone_contacto_5: installation.phone_contacto_5 || '',
+        direccion_contacto_5: installation.direccion_contacto_5 || '',
       });
     }
   }, [installation]);
@@ -312,7 +386,7 @@ export default function InstallationForm({
       return;
     }
 
-    // Build submit data
+    // Build submit data - Incluye los 5 contactos
     const submitData: InstallationCreate | InstallationUpdate = {
       nombre: formData.nombre || undefined,
       tipo_pallet: formData.tipo_pallet || undefined,
@@ -325,11 +399,36 @@ export default function InstallationForm({
       fsc: formData.fsc || undefined,
       pais_mercado_destino: formData.pais_mercado_destino || undefined,
       certificado_calidad: formData.certificado_calidad || undefined,
+      // Contacto 1
       nombre_contacto: formData.nombre_contacto || undefined,
       cargo_contacto: formData.cargo_contacto || undefined,
       email_contacto: formData.email_contacto || undefined,
       phone_contacto: formData.phone_contacto || undefined,
       direccion_contacto: formData.direccion_contacto || undefined,
+      // Contacto 2
+      nombre_contacto_2: formData.nombre_contacto_2 || undefined,
+      cargo_contacto_2: formData.cargo_contacto_2 || undefined,
+      email_contacto_2: formData.email_contacto_2 || undefined,
+      phone_contacto_2: formData.phone_contacto_2 || undefined,
+      direccion_contacto_2: formData.direccion_contacto_2 || undefined,
+      // Contacto 3
+      nombre_contacto_3: formData.nombre_contacto_3 || undefined,
+      cargo_contacto_3: formData.cargo_contacto_3 || undefined,
+      email_contacto_3: formData.email_contacto_3 || undefined,
+      phone_contacto_3: formData.phone_contacto_3 || undefined,
+      direccion_contacto_3: formData.direccion_contacto_3 || undefined,
+      // Contacto 4
+      nombre_contacto_4: formData.nombre_contacto_4 || undefined,
+      cargo_contacto_4: formData.cargo_contacto_4 || undefined,
+      email_contacto_4: formData.email_contacto_4 || undefined,
+      phone_contacto_4: formData.phone_contacto_4 || undefined,
+      direccion_contacto_4: formData.direccion_contacto_4 || undefined,
+      // Contacto 5
+      nombre_contacto_5: formData.nombre_contacto_5 || undefined,
+      cargo_contacto_5: formData.cargo_contacto_5 || undefined,
+      email_contacto_5: formData.email_contacto_5 || undefined,
+      phone_contacto_5: formData.phone_contacto_5 || undefined,
+      direccion_contacto_5: formData.direccion_contacto_5 || undefined,
     };
 
     // Only include client_id when creating
@@ -348,6 +447,82 @@ export default function InstallationForm({
       }
     }
   }, [installation, onDelete]);
+
+  // Función helper para renderizar campos de contacto (no es un componente React)
+  const renderContactFields = (suffix: string, title: string) => {
+    const nameField = `nombre_contacto${suffix}` as keyof typeof formData;
+    const cargoField = `cargo_contacto${suffix}` as keyof typeof formData;
+    const emailField = `email_contacto${suffix}` as keyof typeof formData;
+    const phoneField = `phone_contacto${suffix}` as keyof typeof formData;
+    const direccionField = `direccion_contacto${suffix}` as keyof typeof formData;
+
+    return (
+      <ContactSection key={suffix || 'main'}>
+        <ContactTitle>{title}</ContactTitle>
+        <ContactGrid>
+          <FormGroup>
+            <Label>Nombre</Label>
+            <Input
+              type="text"
+              name={nameField}
+              value={formData[nameField] as string || ''}
+              onChange={handleChange}
+              placeholder="Nombre del contacto"
+              maxLength={255}
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Cargo</Label>
+            <Input
+              type="text"
+              name={cargoField}
+              value={formData[cargoField] as string || ''}
+              onChange={handleChange}
+              placeholder="Cargo del contacto"
+              maxLength={255}
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Email</Label>
+            <Input
+              type="email"
+              name={emailField}
+              value={formData[emailField] as string || ''}
+              onChange={handleChange}
+              placeholder="correo@ejemplo.com"
+              maxLength={255}
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Teléfono</Label>
+            <Input
+              type="text"
+              name={phoneField}
+              value={formData[phoneField] as string || ''}
+              onChange={handleChange}
+              placeholder="+56 9 1234 5678"
+              maxLength={20}
+            />
+          </FormGroup>
+
+          <FormGroup $fullWidth>
+            <Label>Dirección</Label>
+            <Input
+              type="text"
+              name={direccionField}
+              value={formData[direccionField] as string || ''}
+              onChange={handleChange}
+              placeholder="Dirección del contacto"
+              maxLength={255}
+            />
+          </FormGroup>
+        </ContactGrid>
+      </ContactSection>
+    );
+  };
 
   return (
     <FormCard>
@@ -454,70 +629,16 @@ export default function InstallationForm({
                 min="0"
               />
             </FormGroup>
-
-            {/* Contacto Principal */}
-            <SectionTitle style={{ gridColumn: '1 / -1' }}>Contacto de la Instalación</SectionTitle>
-
-            <FormGroup>
-              <Label>Nombre Contacto</Label>
-              <Input
-                type="text"
-                name="nombre_contacto"
-                value={formData.nombre_contacto}
-                onChange={handleChange}
-                placeholder="Nombre del contacto"
-                maxLength={255}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label>Cargo</Label>
-              <Input
-                type="text"
-                name="cargo_contacto"
-                value={formData.cargo_contacto}
-                onChange={handleChange}
-                placeholder="Cargo del contacto"
-                maxLength={255}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label>Email</Label>
-              <Input
-                type="email"
-                name="email_contacto"
-                value={formData.email_contacto}
-                onChange={handleChange}
-                placeholder="correo@ejemplo.com"
-                maxLength={255}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label>Teléfono</Label>
-              <Input
-                type="text"
-                name="phone_contacto"
-                value={formData.phone_contacto}
-                onChange={handleChange}
-                placeholder="+56 9 1234 5678"
-                maxLength={20}
-              />
-            </FormGroup>
-
-            <FormGroup $fullWidth>
-              <Label>Dirección</Label>
-              <Input
-                type="text"
-                name="direccion_contacto"
-                value={formData.direccion_contacto}
-                onChange={handleChange}
-                placeholder="Dirección de la instalación"
-                maxLength={255}
-              />
-            </FormGroup>
           </FormGrid>
+
+          {/* 5 Contactos de la Instalación */}
+          <SectionTitle style={{ marginTop: '1.5rem' }}>Contactos de la Instalación</SectionTitle>
+
+          {renderContactFields('', 'Contacto 1 (Principal)')}
+          {renderContactFields('_2', 'Contacto 2')}
+          {renderContactFields('_3', 'Contacto 3')}
+          {renderContactFields('_4', 'Contacto 4')}
+          {renderContactFields('_5', 'Contacto 5')}
 
           <FormActions>
             {isEditing && onDelete && (
