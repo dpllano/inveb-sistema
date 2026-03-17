@@ -5,13 +5,14 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { theme } from '../../theme';
 import { CascadeForm } from '../../components/CascadeForm';
-import { workOrdersApi, type WorkOrderUpdateData } from '../../services/api';
+import { workOrdersApi, uploadsApi, type WorkOrderUpdateData } from '../../services/api';
 import { useWorkOrderDetail, useWorkOrderFilterOptions, useFormOptionsComplete } from '../../hooks/useWorkOrders';
 import type { CascadeFormData } from '../../types/cascade';
+import FileAttachments, { FileUpload, type OTFiles, type FileAttachment, FILE_TYPE_LABELS } from '../../components/common/FileAttachments';
 
 // Styled Components
 const Container = styled.div`
@@ -458,6 +459,16 @@ export default function EditWorkOrder({ otId, onNavigate }: EditWorkOrderProps) 
   const { data: filterOptions, isLoading: optionsLoading } = useWorkOrderFilterOptions();
   const { data: formOptions, isLoading: formOptionsLoading } = useFormOptionsComplete();
 
+  // Query para archivos adjuntos de la OT
+  const { data: otFiles, isLoading: filesLoading, refetch: refetchFiles } = useQuery({
+    queryKey: ['ot-files', otId],
+    queryFn: () => uploadsApi.getOTFiles(otId),
+    enabled: !!otId,
+  });
+
+  // Estado para subida de archivos
+  const [uploadingFile, setUploadingFile] = useState<string | null>(null);
+
   // Filtrar subjerarquías basado en jerarquía seleccionada
   const filteredSubhierarchies = useMemo(() => {
     if (!formOptions?.subhierarchies || !formState?.hierarchy_id) return [];
@@ -642,6 +653,46 @@ export default function EditWorkOrder({ otId, onNavigate }: EditWorkOrderProps) 
 
   const handleCascadeChange = useCallback((data: CascadeFormData) => {
     setFormState(prev => prev ? { ...prev, cascadeData: data } : null);
+  }, []);
+
+  // Handler para subir archivos
+  const handleFileUpload = useCallback(async (file: File, fileType: string) => {
+    try {
+      setUploadingFile(fileType);
+      await uploadsApi.uploadOTFile(otId, file, fileType as import('../../services/api').OTFileType);
+      refetchFiles();
+      setSuccessMessage(`Archivo ${FILE_TYPE_LABELS[fileType] || fileType} subido exitosamente`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setErrorMessage('Error al subir el archivo');
+      setTimeout(() => setErrorMessage(null), 3000);
+    } finally {
+      setUploadingFile(null);
+    }
+  }, [otId, refetchFiles]);
+
+  // Handler para eliminar archivos
+  const handleFileDelete = useCallback(async (file: FileAttachment) => {
+    if (!file.file_type) return;
+    if (!window.confirm(`¿Está seguro de eliminar el archivo ${file.filename}?`)) return;
+
+    try {
+      await uploadsApi.deleteOTFile(otId, file.file_type as import('../../services/api').OTFileType);
+      refetchFiles();
+      setSuccessMessage('Archivo eliminado exitosamente');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      setErrorMessage('Error al eliminar el archivo');
+      setTimeout(() => setErrorMessage(null), 3000);
+    }
+  }, [otId, refetchFiles]);
+
+  // Handler para descargar archivos
+  const handleFileDownload = useCallback((file: FileAttachment) => {
+    const url = uploadsApi.getFileUrl(file.url);
+    window.open(url, '_blank');
   }, []);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -1860,6 +1911,63 @@ export default function EditWorkOrder({ otId, onNavigate }: EditWorkOrderProps) 
             </SectionBody>
           </FormSection>
         </div>
+
+        {/* Sección 15: Archivos Adjuntos */}
+        <FormSection>
+          <SectionHeader>15.- Archivos Adjuntos</SectionHeader>
+          <SectionBody>
+            {filesLoading ? (
+              <LoadingOverlay>
+                <Spinner />
+                <span>Cargando archivos...</span>
+              </LoadingOverlay>
+            ) : (
+              <>
+                {/* Mostrar archivos existentes */}
+                <FileAttachments
+                  files={otFiles as OTFiles || {
+                    ot_id: otId,
+                    plano_actual: null,
+                    boceto_actual: null,
+                    ficha_tecnica: null,
+                    correo_cliente: null,
+                    speed_file: null,
+                    otro_file: null,
+                    oc_file: null,
+                    licitacion_file: null,
+                    vb_muestra_file: null,
+                    vb_boceto_file: null,
+                  }}
+                  onDownload={handleFileDownload}
+                  onDelete={handleFileDelete}
+                  canDelete={true}
+                  showFilters={true}
+                  emptyMessage="No hay archivos adjuntos para esta OT"
+                />
+
+                {/* Zona de subida de archivos */}
+                <div style={{ marginTop: '1.5rem', borderTop: `1px solid ${theme.colors.border}`, paddingTop: '1.5rem' }}>
+                  <Label style={{ marginBottom: '1rem', display: 'block', fontSize: '0.9rem' }}>
+                    Subir nuevo archivo
+                  </Label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                    {Object.entries(FILE_TYPE_LABELS).map(([type, label]) => (
+                      <div key={type} style={{ opacity: uploadingFile === type ? 0.5 : 1 }}>
+                        <Label style={{ fontSize: '0.75rem', marginBottom: '0.5rem', display: 'block' }}>{label}</Label>
+                        <FileUpload
+                          fileType={type}
+                          onFileSelect={handleFileUpload}
+                          label={uploadingFile === type ? 'Subiendo...' : 'Seleccionar archivo'}
+                          disabled={uploadingFile !== null}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </SectionBody>
+        </FormSection>
 
         {/* Botones de acción */}
         <ButtonGroup>
