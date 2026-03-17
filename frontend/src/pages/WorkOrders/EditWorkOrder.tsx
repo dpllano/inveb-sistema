@@ -12,7 +12,7 @@ import { CascadeForm } from '../../components/CascadeForm';
 import { workOrdersApi, uploadsApi, type WorkOrderUpdateData } from '../../services/api';
 import { useWorkOrderDetail, useWorkOrderFilterOptions, useFormOptionsComplete } from '../../hooks/useWorkOrders';
 import type { CascadeFormData } from '../../types/cascade';
-import FileAttachments, { FileUpload, type OTFiles, type FileAttachment, FILE_TYPE_LABELS } from '../../components/common/FileAttachments';
+import { type OTFiles, FILE_TYPE_LABELS } from '../../components/common/FileAttachments';
 
 // Styled Components
 const Container = styled.div`
@@ -212,6 +212,44 @@ const CheckboxLabel = styled.label`
     height: 18px;
     cursor: pointer;
   }
+`;
+
+// Styled components para archivos inline
+const CheckboxWithFile = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+`;
+
+const FileActions = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.25rem;
+`;
+
+const FileIconButton = styled.button<{ $color?: string }>`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 0.9rem;
+  color: ${props => props.$color || theme.colors.primary};
+  transition: transform 0.15s;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
 `;
 
 const SubmitButton = styled.button`
@@ -460,7 +498,7 @@ export default function EditWorkOrder({ otId, onNavigate }: EditWorkOrderProps) 
   const { data: formOptions, isLoading: formOptionsLoading } = useFormOptionsComplete();
 
   // Query para archivos adjuntos de la OT
-  const { data: otFiles, isLoading: filesLoading, refetch: refetchFiles } = useQuery({
+  const { data: otFiles, refetch: refetchFiles } = useQuery({
     queryKey: ['ot-files', otId],
     queryFn: () => uploadsApi.getOTFiles(otId),
     enabled: !!otId,
@@ -672,28 +710,95 @@ export default function EditWorkOrder({ otId, onNavigate }: EditWorkOrderProps) 
     }
   }, [otId, refetchFiles]);
 
-  // Handler para eliminar archivos
-  const handleFileDelete = useCallback(async (file: FileAttachment) => {
-    if (!file.file_type) return;
-    if (!window.confirm(`¿Está seguro de eliminar el archivo ${file.filename}?`)) return;
+  // Mapeo de campos de formulario a tipos de archivo
+  const fileFieldMap: Record<string, keyof OTFiles> = {
+    ant_des_correo_cliente: 'correo_cliente',
+    ant_des_plano_actual: 'plano_actual',
+    ant_des_boceto_actual: 'boceto_actual',
+    ant_des_otro: 'otro_file',
+    ant_des_vb_muestra: 'vb_muestra_file',
+    ant_des_vb_boce: 'vb_boceto_file',
+  };
 
-    try {
-      await uploadsApi.deleteOTFile(otId, file.file_type as import('../../services/api').OTFileType);
-      refetchFiles();
-      setSuccessMessage('Archivo eliminado exitosamente');
-      setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      setErrorMessage('Error al eliminar el archivo');
-      setTimeout(() => setErrorMessage(null), 3000);
-    }
-  }, [otId, refetchFiles]);
+  // Función helper para renderizar íconos de archivo inline
+  const renderInlineFile = useCallback((
+    checkboxField: string,
+    fileType: string,
+    fileInputId: string
+  ) => {
+    const fileKey = fileFieldMap[checkboxField] as keyof OTFiles | undefined;
+    const fileUrlRaw = fileKey && otFiles ? (otFiles as OTFiles)[fileKey] : null;
+    const fileUrl = typeof fileUrlRaw === 'string' ? fileUrlRaw : null;
+    const isUploading = uploadingFile === fileType;
 
-  // Handler para descargar archivos
-  const handleFileDownload = useCallback((file: FileAttachment) => {
-    const url = uploadsApi.getFileUrl(file.url);
-    window.open(url, '_blank');
-  }, []);
+    const handleInlineUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        handleFileUpload(file, fileType);
+      }
+      e.target.value = '';
+    };
+
+    const handleInlineDelete = async () => {
+      if (!fileUrl) return;
+      if (!window.confirm('¿Eliminar este archivo?')) return;
+      try {
+        await uploadsApi.deleteOTFile(otId, fileType as import('../../services/api').OTFileType);
+        refetchFiles();
+        setSuccessMessage('Archivo eliminado');
+        setTimeout(() => setSuccessMessage(null), 2000);
+      } catch {
+        setErrorMessage('Error al eliminar');
+        setTimeout(() => setErrorMessage(null), 2000);
+      }
+    };
+
+    const handleInlineDownload = () => {
+      if (fileUrl) {
+        window.open(uploadsApi.getFileUrl(fileUrl), '_blank');
+      }
+    };
+
+    return (
+      <FileActions>
+        {fileUrl ? (
+          <>
+            <FileIconButton
+              type="button"
+              title="Descargar archivo"
+              onClick={handleInlineDownload}
+              $color="#38c172"
+            >
+              ⬇️
+            </FileIconButton>
+            <FileIconButton
+              type="button"
+              title="Eliminar archivo"
+              onClick={handleInlineDelete}
+              $color="#e3342f"
+            >
+              🗑️
+            </FileIconButton>
+          </>
+        ) : null}
+        <label htmlFor={fileInputId} style={{ cursor: 'pointer' }}>
+          <FileIconButton
+            as="span"
+            title={fileUrl ? 'Reemplazar archivo' : 'Subir archivo'}
+            $color={theme.colors.primary}
+          >
+            {isUploading ? '⏳' : '📎'}
+          </FileIconButton>
+        </label>
+        <HiddenFileInput
+          type="file"
+          id={fileInputId}
+          onChange={handleInlineUpload}
+          disabled={isUploading}
+        />
+      </FileActions>
+    );
+  }, [otFiles, uploadingFile, handleFileUpload, otId, refetchFiles]);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -988,46 +1093,61 @@ export default function EditWorkOrder({ otId, onNavigate }: EditWorkOrderProps) 
             <div style={{ marginBottom: '1rem' }}>
               <Label style={{ fontWeight: 'bold', marginBottom: '0.5rem', display: 'block' }}>Documentos:</Label>
               <CheckboxGroup>
-                <CheckboxLabel>
-                  <input
-                    type="checkbox"
-                    checked={formState.ant_des_correo_cliente}
-                    onChange={(e) => handleInputChange('ant_des_correo_cliente', e.target.checked)}
-                  />
-                  Correo Cliente
-                </CheckboxLabel>
-                <CheckboxLabel>
-                  <input
-                    type="checkbox"
-                    checked={formState.ant_des_plano_actual}
-                    onChange={(e) => handleInputChange('ant_des_plano_actual', e.target.checked)}
-                  />
-                  Plano Actual
-                </CheckboxLabel>
-                <CheckboxLabel>
-                  <input
-                    type="checkbox"
-                    checked={formState.ant_des_boceto_actual}
-                    onChange={(e) => handleInputChange('ant_des_boceto_actual', e.target.checked)}
-                  />
-                  Boceto Actual
-                </CheckboxLabel>
-                <CheckboxLabel>
-                  <input
-                    type="checkbox"
-                    checked={formState.ant_des_spec}
-                    onChange={(e) => handleInputChange('ant_des_spec', e.target.checked)}
-                  />
-                  Spec
-                </CheckboxLabel>
-                <CheckboxLabel>
-                  <input
-                    type="checkbox"
-                    checked={formState.ant_des_otro}
-                    onChange={(e) => handleInputChange('ant_des_otro', e.target.checked)}
-                  />
-                  Otro
-                </CheckboxLabel>
+                <CheckboxWithFile>
+                  <CheckboxLabel>
+                    <input
+                      type="checkbox"
+                      checked={formState.ant_des_correo_cliente}
+                      onChange={(e) => handleInputChange('ant_des_correo_cliente', e.target.checked)}
+                    />
+                    Correo Cliente
+                  </CheckboxLabel>
+                  {renderInlineFile('ant_des_correo_cliente', 'correo_cliente', 'file_correo_cliente')}
+                </CheckboxWithFile>
+                <CheckboxWithFile>
+                  <CheckboxLabel>
+                    <input
+                      type="checkbox"
+                      checked={formState.ant_des_plano_actual}
+                      onChange={(e) => handleInputChange('ant_des_plano_actual', e.target.checked)}
+                    />
+                    Plano Actual
+                  </CheckboxLabel>
+                  {renderInlineFile('ant_des_plano_actual', 'plano', 'file_plano_actual')}
+                </CheckboxWithFile>
+                <CheckboxWithFile>
+                  <CheckboxLabel>
+                    <input
+                      type="checkbox"
+                      checked={formState.ant_des_boceto_actual}
+                      onChange={(e) => handleInputChange('ant_des_boceto_actual', e.target.checked)}
+                    />
+                    Boceto Actual
+                  </CheckboxLabel>
+                  {renderInlineFile('ant_des_boceto_actual', 'boceto', 'file_boceto_actual')}
+                </CheckboxWithFile>
+                <CheckboxWithFile>
+                  <CheckboxLabel>
+                    <input
+                      type="checkbox"
+                      checked={formState.ant_des_spec}
+                      onChange={(e) => handleInputChange('ant_des_spec', e.target.checked)}
+                    />
+                    Spec
+                  </CheckboxLabel>
+                  {renderInlineFile('ant_des_spec', 'speed', 'file_spec')}
+                </CheckboxWithFile>
+                <CheckboxWithFile>
+                  <CheckboxLabel>
+                    <input
+                      type="checkbox"
+                      checked={formState.ant_des_otro}
+                      onChange={(e) => handleInputChange('ant_des_otro', e.target.checked)}
+                    />
+                    Otro
+                  </CheckboxLabel>
+                  {renderInlineFile('ant_des_otro', 'otro', 'file_otro')}
+                </CheckboxWithFile>
               </CheckboxGroup>
             </div>
 
@@ -1911,63 +2031,6 @@ export default function EditWorkOrder({ otId, onNavigate }: EditWorkOrderProps) 
             </SectionBody>
           </FormSection>
         </div>
-
-        {/* Sección 15: Archivos Adjuntos */}
-        <FormSection>
-          <SectionHeader>15.- Archivos Adjuntos</SectionHeader>
-          <SectionBody>
-            {filesLoading ? (
-              <LoadingOverlay>
-                <Spinner />
-                <span>Cargando archivos...</span>
-              </LoadingOverlay>
-            ) : (
-              <>
-                {/* Mostrar archivos existentes */}
-                <FileAttachments
-                  files={otFiles as OTFiles || {
-                    ot_id: otId,
-                    plano_actual: null,
-                    boceto_actual: null,
-                    ficha_tecnica: null,
-                    correo_cliente: null,
-                    speed_file: null,
-                    otro_file: null,
-                    oc_file: null,
-                    licitacion_file: null,
-                    vb_muestra_file: null,
-                    vb_boceto_file: null,
-                  }}
-                  onDownload={handleFileDownload}
-                  onDelete={handleFileDelete}
-                  canDelete={true}
-                  showFilters={true}
-                  emptyMessage="No hay archivos adjuntos para esta OT"
-                />
-
-                {/* Zona de subida de archivos */}
-                <div style={{ marginTop: '1.5rem', borderTop: `1px solid ${theme.colors.border}`, paddingTop: '1.5rem' }}>
-                  <Label style={{ marginBottom: '1rem', display: 'block', fontSize: '0.9rem' }}>
-                    Subir nuevo archivo
-                  </Label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-                    {Object.entries(FILE_TYPE_LABELS).map(([type, label]) => (
-                      <div key={type} style={{ opacity: uploadingFile === type ? 0.5 : 1 }}>
-                        <Label style={{ fontSize: '0.75rem', marginBottom: '0.5rem', display: 'block' }}>{label}</Label>
-                        <FileUpload
-                          fileType={type}
-                          onFileSelect={handleFileUpload}
-                          label={uploadingFile === type ? 'Subiendo...' : 'Seleccionar archivo'}
-                          disabled={uploadingFile !== null}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </SectionBody>
-        </FormSection>
 
         {/* Botones de acción */}
         <ButtonGroup>
