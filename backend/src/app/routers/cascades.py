@@ -199,7 +199,13 @@ async def get_contactos_cliente(
 
     Si se proporciona instalacion_id, obtiene los contactos embebidos en la instalación.
     Si no, obtiene los contactos de client_contacts.
+
+    Build: 2026-03-16-v3 - Fix flexibilidad active_contacto
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"[CONTACTOS] client_id={client_id}, instalacion_id={instalacion_id}")
+
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
@@ -225,7 +231,7 @@ async def get_contactos_cliente(
                     for i in range(1, 6):
                         suffix = "" if i == 1 else f"_{i}"
                         nombre = row.get(f"nombre_contacto{suffix}")
-                        if nombre:
+                        if nombre and str(nombre).strip():
                             contactos.append(ContactoOption(
                                 id=i,  # ID sintético basado en posición
                                 nombre=nombre,
@@ -249,12 +255,29 @@ async def get_contactos_cliente(
                     WHERE id = %s
                 """, (client_id,))
                 row = cursor.fetchone()
+                logger.info(f"[CONTACTOS] Cliente {client_id} encontrado: {row is not None}")
                 if row:
+                    # Debug: mostrar datos de contactos
+                    logger.info(f"[CONTACTOS] nombre_contacto={row.get('nombre_contacto')}, active_contacto={row.get('active_contacto')}")
+                    for i in range(2, 6):
+                        logger.info(f"[CONTACTOS] nombre_contacto_{i}={row.get(f'nombre_contacto_{i}')}, active_contacto_{i}={row.get(f'active_contacto_{i}')}")
+
+                    # Helper para verificar si contacto está activo
+                    # Laravel usa active_contacto == "activo", pero BD puede tener valores inconsistentes
+                    # Aceptamos: "activo", "Activo", "ACTIVO", 1, "1", True, o cualquier valor truthy
+                    def es_activo(valor):
+                        if valor is None:
+                            return False
+                        if isinstance(valor, str):
+                            return valor.lower() in ('activo', '1', 'true', 'si', 'yes', 'on')
+                        return bool(valor)
+
                     # Contacto 1 (sin sufijo numérico)
-                    if row.get("nombre_contacto") and row.get("active_contacto") == "activo":
+                    nombre1 = row.get("nombre_contacto")
+                    if nombre1 and str(nombre1).strip() and es_activo(row.get("active_contacto")):
                         contactos.append(ContactoOption(
                             id=1,
-                            nombre=row["nombre_contacto"],
+                            nombre=nombre1,
                             cargo=row.get("cargo_contacto"),
                             email=row.get("email_contacto"),
                             telefono=row.get("phone_contacto"),
@@ -265,7 +288,7 @@ async def get_contactos_cliente(
                     for i in range(2, 6):
                         nombre = row.get(f"nombre_contacto_{i}")
                         activo = row.get(f"active_contacto_{i}")
-                        if nombre and activo == "activo":
+                        if nombre and str(nombre).strip() and es_activo(activo):
                             contactos.append(ContactoOption(
                                 id=i,
                                 nombre=nombre,

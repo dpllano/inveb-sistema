@@ -204,7 +204,15 @@ const ContactTitle = styled.h4`
   margin: 0 0 0.75rem 0;
 `;
 
-// Types
+// Types for select options
+interface SelectOption {
+  id: number;
+  nombre?: string;
+  descripcion?: string;
+  name?: string;
+  codigo?: string;
+}
+
 interface InstallationFormProps {
   installation: InstallationDetail | null;
   clientId: number;
@@ -212,6 +220,11 @@ interface InstallationFormProps {
   onCancel: () => void;
   onDelete?: (id: number) => void;
   isLoading: boolean;
+  // Opciones para selects (configuración de pallet)
+  fscOptions?: SelectOption[];
+  palletQaOptions?: SelectOption[];
+  palletTagFormatOptions?: SelectOption[];
+  targetMarketOptions?: SelectOption[];
 }
 
 interface FormErrors {
@@ -225,22 +238,27 @@ export default function InstallationForm({
   onCancel,
   onDelete,
   isLoading,
+  fscOptions = [],
+  palletQaOptions = [],
+  palletTagFormatOptions = [],
+  targetMarketOptions = [],
 }: InstallationFormProps) {
   const isEditing = !!installation;
 
   // Form state - Incluye los 5 contactos según Laravel
+  // IMPORTANTE: Usar ?? para campos numéricos donde 0 es un valor válido (ej: bulto_zunchado=0 significa "No")
   const [formData, setFormData] = useState({
     nombre: installation?.nombre || '',
-    tipo_pallet: installation?.tipo_pallet || null,
-    altura_pallet: installation?.altura_pallet || null,
-    sobresalir_carga: installation?.sobresalir_carga || null,
-    bulto_zunchado: installation?.bulto_zunchado || null,
-    formato_etiqueta: installation?.formato_etiqueta || null,
-    etiquetas_pallet: installation?.etiquetas_pallet || null,
-    termocontraible: installation?.termocontraible || null,
-    fsc: installation?.fsc || null,
-    pais_mercado_destino: installation?.pais_mercado_destino || null,
-    certificado_calidad: installation?.certificado_calidad || null,
+    tipo_pallet: installation?.tipo_pallet ?? null,
+    altura_pallet: installation?.altura_pallet ?? null,
+    sobresalir_carga: installation?.sobresalir_carga ?? null,
+    bulto_zunchado: installation?.bulto_zunchado ?? null,
+    formato_etiqueta: installation?.formato_etiqueta ?? null,
+    etiquetas_pallet: installation?.etiquetas_pallet ?? null,
+    termocontraible: installation?.termocontraible ?? null,
+    fsc: installation?.fsc ?? null,
+    pais_mercado_destino: installation?.pais_mercado_destino ?? null,
+    certificado_calidad: installation?.certificado_calidad ?? null,
     // Contacto 1
     nombre_contacto: installation?.nombre_contacto || '',
     cargo_contacto: installation?.cargo_contacto || '',
@@ -387,18 +405,19 @@ export default function InstallationForm({
     }
 
     // Build submit data - Incluye los 5 contactos
+    // IMPORTANTE: Usar ?? en lugar de || para campos numéricos donde 0 es un valor válido
     const submitData: InstallationCreate | InstallationUpdate = {
       nombre: formData.nombre || undefined,
-      tipo_pallet: formData.tipo_pallet || undefined,
-      altura_pallet: formData.altura_pallet || undefined,
-      sobresalir_carga: formData.sobresalir_carga || undefined,
-      bulto_zunchado: formData.bulto_zunchado || undefined,
-      formato_etiqueta: formData.formato_etiqueta || undefined,
-      etiquetas_pallet: formData.etiquetas_pallet || undefined,
-      termocontraible: formData.termocontraible || undefined,
-      fsc: formData.fsc || undefined,
+      tipo_pallet: formData.tipo_pallet ?? undefined,
+      altura_pallet: formData.altura_pallet ?? undefined,
+      sobresalir_carga: formData.sobresalir_carga ?? undefined,
+      bulto_zunchado: formData.bulto_zunchado ?? undefined,
+      formato_etiqueta: formData.formato_etiqueta ?? undefined,
+      etiquetas_pallet: formData.etiquetas_pallet ?? undefined,
+      termocontraible: formData.termocontraible ?? undefined,
+      fsc: formData.fsc ?? undefined,
       pais_mercado_destino: formData.pais_mercado_destino || undefined,
-      certificado_calidad: formData.certificado_calidad || undefined,
+      certificado_calidad: formData.certificado_calidad ?? undefined,
       // Contacto 1
       nombre_contacto: formData.nombre_contacto || undefined,
       cargo_contacto: formData.cargo_contacto || undefined,
@@ -558,7 +577,7 @@ export default function InstallationForm({
               <Label>Tipo de Pallet</Label>
               <Select
                 name="tipo_pallet"
-                value={formData.tipo_pallet || ''}
+                value={formData.tipo_pallet ?? ''}
                 onChange={handleChange}
               >
                 <option value="">Seleccionar</option>
@@ -572,7 +591,7 @@ export default function InstallationForm({
               <Input
                 type="number"
                 name="altura_pallet"
-                value={formData.altura_pallet || ''}
+                value={formData.altura_pallet ?? ''}
                 onChange={handleChange}
                 placeholder="Ej: 1200"
                 min="0"
@@ -620,14 +639,81 @@ export default function InstallationForm({
 
             <FormGroup>
               <Label>Etiquetas por Pallet</Label>
-              <Input
-                type="number"
+              <Select
                 name="etiquetas_pallet"
-                value={formData.etiquetas_pallet || ''}
+                value={formData.etiquetas_pallet ?? ''}
                 onChange={handleChange}
-                placeholder="Ej: 4"
-                min="0"
-              />
+              >
+                <option value="">Seleccionar</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </Select>
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Formato Etiqueta Pallet</Label>
+              <Select
+                name="formato_etiqueta"
+                value={formData.formato_etiqueta ?? ''}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar</option>
+                {palletTagFormatOptions.map(opt => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.descripcion || opt.nombre || opt.name}
+                  </option>
+                ))}
+              </Select>
+            </FormGroup>
+
+            <FormGroup>
+              <Label>FSC</Label>
+              <Select
+                name="fsc"
+                value={formData.fsc ?? ''}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar</option>
+                {fscOptions.map(opt => (
+                  <option key={opt.codigo || opt.id} value={opt.codigo || opt.id}>
+                    {opt.descripcion || opt.nombre}
+                  </option>
+                ))}
+              </Select>
+            </FormGroup>
+
+            <FormGroup>
+              <Label>País Mercado/Destino</Label>
+              <Select
+                name="pais_mercado_destino"
+                value={formData.pais_mercado_destino ?? ''}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar</option>
+                {targetMarketOptions.map(opt => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.descripcion || opt.nombre || opt.name}
+                  </option>
+                ))}
+              </Select>
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Certificado de Calidad</Label>
+              <Select
+                name="certificado_calidad"
+                value={formData.certificado_calidad ?? ''}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar</option>
+                {palletQaOptions.map(opt => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.descripcion || opt.nombre}
+                  </option>
+                ))}
+              </Select>
             </FormGroup>
           </FormGrid>
 

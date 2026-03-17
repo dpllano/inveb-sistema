@@ -8,13 +8,14 @@ import styled from 'styled-components';
 import { theme } from '../../theme';
 import {
   useUsersList,
+  useUserDetail,
   useRoles,
   useCreateUser,
   useUpdateUser,
   useActivateUser,
   useDeactivateUser,
 } from '../../hooks/useMantenedores';
-import type { UserFilters, UserCreate, UserUpdate, UserDetail } from '../../services/api';
+import type { UserFilters, UserCreate, UserUpdate } from '../../services/api';
 import UserForm from './UserForm';
 
 // Styled Components (reutilizamos los mismos estilos de ClientsList)
@@ -378,7 +379,7 @@ export default function UsersList({ onNavigate }: UsersListProps) {
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
   const [showForm, setShowForm] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserDetail | null>(null);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -392,7 +393,9 @@ export default function UsersList({ onNavigate }: UsersListProps) {
   };
 
   // Hooks
-  const { data, isLoading, error } = useUsersList(filters);
+  // isLoading = primera carga, isFetching = recargando en background
+  const { data, isLoading, isFetching, error } = useUsersList(filters);
+  const { data: editingUser, isLoading: isLoadingUserDetail } = useUserDetail(editingUserId);
   const { data: roles } = useRoles();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
@@ -413,31 +416,31 @@ export default function UsersList({ onNavigate }: UsersListProps) {
   }, []);
 
   const handleCreate = useCallback(() => {
-    setEditingUser(null);
+    setEditingUserId(null);
     setShowForm(true);
   }, []);
 
-  const handleEdit = useCallback((user: UserDetail) => {
-    setEditingUser(user);
+  const handleEdit = useCallback((userId: number) => {
+    setEditingUserId(userId);
     setShowForm(true);
   }, []);
 
   const handleFormClose = useCallback(() => {
     setShowForm(false);
-    setEditingUser(null);
+    setEditingUserId(null);
   }, []);
 
   const handleFormSubmit = useCallback(async (formData: UserCreate | UserUpdate) => {
     try {
-      if (editingUser) {
-        await updateMutation.mutateAsync({ id: editingUser.id, data: formData as UserUpdate });
+      if (editingUserId) {
+        await updateMutation.mutateAsync({ id: editingUserId, data: formData as UserUpdate });
         setSuccessMessage('Usuario actualizado correctamente');
       } else {
         await createMutation.mutateAsync(formData as UserCreate);
         setSuccessMessage('Usuario creado correctamente');
       }
       setShowForm(false);
-      setEditingUser(null);
+      setEditingUserId(null);
       setErrorMessage(null);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: unknown) {
@@ -445,7 +448,7 @@ export default function UsersList({ onNavigate }: UsersListProps) {
       setErrorMessage(error.message || 'Error al guardar usuario');
       setSuccessMessage(null);
     }
-  }, [editingUser, createMutation, updateMutation]);
+  }, [editingUserId, createMutation, updateMutation]);
 
   const handleActivate = useCallback(async (id: number) => {
     try {
@@ -472,8 +475,8 @@ export default function UsersList({ onNavigate }: UsersListProps) {
     }
   }, [deactivateMutation]);
 
-  // Render loading
-  if (isLoading) {
+  // Render loading - solo en primera carga cuando no hay datos
+  if (isLoading && !data) {
     return (
       <Container>
         <Header>
@@ -515,10 +518,30 @@ export default function UsersList({ onNavigate }: UsersListProps) {
 
   // Render form modal
   if (showForm) {
+    // Si estamos editando, esperar a que carguen los datos completos del usuario
+    if (editingUserId && isLoadingUserDetail) {
+      return (
+        <Container>
+          <Header>
+            <Title>Editar Usuario</Title>
+            <HeaderActions>
+              <Button onClick={handleFormClose}>
+                ← Cancelar
+              </Button>
+            </HeaderActions>
+          </Header>
+          <LoadingOverlay>
+            <Spinner />
+            <span>Cargando datos del usuario...</span>
+          </LoadingOverlay>
+        </Container>
+      );
+    }
+
     return (
       <Container>
         <Header>
-          <Title>{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</Title>
+          <Title>{editingUserId ? 'Editar Usuario' : 'Nuevo Usuario'}</Title>
           <HeaderActions>
             <Button onClick={handleFormClose}>
               ← Cancelar
@@ -528,7 +551,7 @@ export default function UsersList({ onNavigate }: UsersListProps) {
         {successMessage && <Alert $type="success">{successMessage}</Alert>}
         {errorMessage && <Alert $type="error">{errorMessage}</Alert>}
         <UserForm
-          user={editingUser}
+          user={editingUserId ? editingUser || null : null}
           roles={roles || []}
           onSubmit={handleFormSubmit}
           onCancel={handleFormClose}
@@ -603,7 +626,7 @@ export default function UsersList({ onNavigate }: UsersListProps) {
       </FiltersCard>
 
       <ResultsInfo>
-        Mostrando {users.length} de {total} usuarios
+        {isFetching ? 'Buscando...' : `Mostrando ${users.length} de ${total} usuarios`}
       </ResultsInfo>
 
       <TableContainer>
@@ -653,7 +676,7 @@ export default function UsersList({ onNavigate }: UsersListProps) {
                     <Td>
                       <ActionButton
                         $variant="edit"
-                        onClick={() => handleEdit(user as UserDetail)}
+                        onClick={() => handleEdit(user.id)}
                         title="Editar"
                       >
                         Editar

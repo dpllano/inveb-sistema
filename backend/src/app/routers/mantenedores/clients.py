@@ -235,9 +235,12 @@ class ClientCreate(BaseModel):
     @field_validator('phone_contacto_1', 'phone_contacto_2', 'phone_contacto_3', 'phone_contacto_4', 'phone_contacto_5')
     @classmethod
     def validar_telefono(cls, v: Optional[str]) -> Optional[str]:
-        """Valida formato de teléfono chileno."""
-        if v and not validar_telefono_chileno(v):
-            raise ValueError('Teléfono chileno inválido. Formato esperado: +56 9 XXXX XXXX')
+        """Valida formato de teléfono chileno - Build 2026-03-16: Permitir vacío y formatos flexibles."""
+        # Permitir vacío
+        if not v or v.strip() == '':
+            return None
+        # Por ahora, aceptar cualquier formato - la validación estricta causaba problemas
+        # TODO: Reimplementar validación más flexible en Sprint futuro
         return v
 
 
@@ -300,9 +303,9 @@ class ClientUpdate(BaseModel):
     @field_validator('phone_contacto_1', 'phone_contacto_2', 'phone_contacto_3', 'phone_contacto_4', 'phone_contacto_5')
     @classmethod
     def validar_telefono(cls, v: Optional[str]) -> Optional[str]:
-        """Valida formato de teléfono chileno."""
-        if v and not validar_telefono_chileno(v):
-            raise ValueError('Teléfono chileno inválido. Formato esperado: +56 9 XXXX XXXX')
+        """Valida formato de teléfono chileno - Build 2026-03-16: Permitir vacío y formatos flexibles."""
+        if not v or v.strip() == '':
+            return None
         return v
 
 
@@ -511,9 +514,17 @@ async def create_client(
     data: ClientCreate,
     user_id: int = Depends(get_current_user_id)
 ):
-    """Crea un nuevo cliente."""
+    """
+    Crea un nuevo cliente.
+    Build: 2026-03-16 - Logging mejorado para diagnóstico
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"[CLIENT CREATE] Recibido: rut={data.rut}, nombre_sap={data.nombre_sap}")
+
     # Validar RUT
     if not validate_rut(data.rut):
+        logger.warning(f"[CLIENT CREATE] RUT inválido: {data.rut}")
         raise HTTPException(status_code=400, detail="RUT invalido")
 
     formatted_rut = format_rut(data.rut)

@@ -1149,14 +1149,18 @@ function AppContent() {
     setIsLoading(false);
   }, []);
 
-  const handleLogin = useCallback(async (rut: string, password: string): Promise<boolean> => {
+  const handleLogin = useCallback(async (rut: string, password: string): Promise<boolean | string> => {
     try {
       const response = await authApi.login({ rut, password });
       setUser(response.user);
       return true;
     } catch (error) {
       console.error('Login failed:', error);
-      return false;
+      // Retornar el mensaje de error del backend si está disponible
+      if (error instanceof Error && error.message) {
+        return error.message;
+      }
+      return 'Error de conexión. Intente nuevamente.';
     }
   }, []);
 

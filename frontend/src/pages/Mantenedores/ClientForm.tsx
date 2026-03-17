@@ -8,7 +8,16 @@ import { useState, useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
 import type { ClientDetail, ClientCreate, ClientUpdate, ClasificacionOption, InstallationListItem, InstallationDetail, InstallationCreate, InstallationUpdate } from '../../services/api';
-import { installationsApi } from '../../services/api';
+import { installationsApi, genericApi } from '../../services/api';
+
+// Types for installation options
+interface SelectOption {
+  id: number;
+  nombre?: string;
+  descripcion?: string;
+  name?: string;
+  codigo?: string;
+}
 import InstallationForm from './InstallationForm';
 
 // Styled Components
@@ -369,6 +378,52 @@ export default function ClientForm({
   const [showInstallationModal, setShowInstallationModal] = useState(false);
   const [editingInstallation, setEditingInstallation] = useState<InstallationDetail | null>(null);
   const [installationLoading, setInstallationLoading] = useState(false);
+
+  // Opciones para configuración de pallet en instalaciones
+  const [fscOptions, setFscOptions] = useState<SelectOption[]>([]);
+  const [palletQaOptions, setPalletQaOptions] = useState<SelectOption[]>([]);
+  const [palletTagFormatOptions, setPalletTagFormatOptions] = useState<SelectOption[]>([]);
+  const [targetMarketOptions, setTargetMarketOptions] = useState<SelectOption[]>([]);
+
+  // Cargar opciones para configuración de pallet
+  useEffect(() => {
+    const loadPalletOptions = async () => {
+      try {
+        // FSC - usa codigo como value
+        const fscResponse = await genericApi.list('fsc', { page: 1, page_size: 100 });
+        setFscOptions(fscResponse.items.map(item => ({
+          id: item.id,
+          codigo: item.codigo || undefined,
+          descripcion: item.nombre,  // nombre contiene la descripción
+        })));
+
+        // Pallet QAs (Certificado de Calidad)
+        const qaResponse = await genericApi.list('pallet_qas', { page: 1, page_size: 100 });
+        setPalletQaOptions(qaResponse.items.map(item => ({
+          id: item.id,
+          descripcion: item.nombre,
+        })));
+
+        // Pallet Tag Formats (Formato Etiqueta)
+        const tagResponse = await genericApi.list('pallet_tag_formats', { page: 1, page_size: 100 });
+        setPalletTagFormatOptions(tagResponse.items.map(item => ({
+          id: item.id,
+          descripcion: item.nombre,
+        })));
+
+        // Target Market (País Mercado/Destino) - tabla es singular
+        const marketResponse = await genericApi.list('target_market', { page: 1, page_size: 100 });
+        setTargetMarketOptions(marketResponse.items.map(item => ({
+          id: item.id,
+          descripcion: item.nombre,  // nombre contiene descripcion del genérico
+        })));
+      } catch (error) {
+        console.error('[ClientForm] Error loading pallet options:', error);
+      }
+    };
+
+    loadPalletOptions();
+  }, []);
 
   // Update form when client changes - Issue 3: Incluir todos los campos
   useEffect(() => {
@@ -921,6 +976,10 @@ export default function ClientForm({
               onCancel={handleCloseInstallationModal}
               onDelete={editingInstallation ? handleDeleteInstallation : undefined}
               isLoading={installationLoading}
+              fscOptions={fscOptions}
+              palletQaOptions={palletQaOptions}
+              palletTagFormatOptions={palletTagFormatOptions}
+              targetMarketOptions={targetMarketOptions}
             />
           </ModalContent>
         </Modal>

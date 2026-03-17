@@ -121,7 +121,8 @@ async def login(request: LoginRequest):
             # Buscar usuario por RUT (con y sin formato)
             sql = """
                 SELECT u.id, u.rut, u.nombre, u.apellido, u.email, u.password,
-                       u.role_id, u.sala_corte_id, r.nombre as role_nombre, r.work_space_id
+                       u.role_id, u.sala_corte_id, u.active,
+                       r.nombre as role_nombre, r.work_space_id
                 FROM users u
                 LEFT JOIN roles r ON u.role_id = r.id
                 WHERE REPLACE(REPLACE(u.rut, '.', ''), '-', '') = %s
@@ -135,6 +136,13 @@ async def login(request: LoginRequest):
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="RUT o contraseña incorrectos"
+                )
+
+            # Verificar si el usuario está activo
+            if user.get('active') == 0 or user.get('active') == '0':
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Usuario sin acceso al sistema. Contacte al administrador."
                 )
 
             # Verificar contraseña con bcrypt

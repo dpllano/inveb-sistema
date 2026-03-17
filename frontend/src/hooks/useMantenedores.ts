@@ -3,7 +3,7 @@
  * CRUD hooks para tablas maestras del sistema
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import {
   clientsApi,
   usersApi,
@@ -21,11 +21,13 @@ import {
 
 /**
  * Hook para listar clientes con filtros y paginacion
+ * Usa placeholderData para mantener datos anteriores mientras carga (evita parpadeo)
  */
 export function useClientsList(filters: ClientFilters = {}) {
   return useQuery({
     queryKey: ['clients', filters],
     queryFn: () => clientsApi.list(filters),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -119,11 +121,13 @@ export function useDeactivateClient() {
 
 /**
  * Hook para listar usuarios con filtros y paginacion
+ * Usa placeholderData para mantener datos anteriores mientras carga (evita parpadeo)
  */
 export function useUsersList(filters: UserFilters = {}) {
   return useQuery({
     queryKey: ['users', filters],
     queryFn: () => usersApi.list(filters),
+    placeholderData: keepPreviousData,
   });
 }
 

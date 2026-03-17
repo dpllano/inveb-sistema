@@ -995,14 +995,20 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
   }, [formState.client_id]);
 
   // Cargar contactos cuando cambia el cliente o instalación
+  // Build: 2026-03-16-v3 - Fix contactos
   useEffect(() => {
+    console.log('[DEBUG CONTACTOS] useEffect ejecutado, client_id=', formState.client_id, 'instalacion_id=', formState.instalacion_cliente_id);
     if (formState.client_id) {
       setLoadingContactos(true);
       setContactos([]);
 
+      console.log('[DEBUG CONTACTOS] Llamando API getContactosCliente...');
       cascadesApi.getContactosCliente(formState.client_id, formState.instalacion_cliente_id || undefined)
-        .then(data => setContactos(data))
-        .catch(err => console.error('Error cargando contactos:', err))
+        .then(data => {
+          console.log('[DEBUG CONTACTOS] Respuesta recibida:', data);
+          setContactos(data);
+        })
+        .catch(err => console.error('[DEBUG CONTACTOS] Error:', err))
         .finally(() => setLoadingContactos(false));
     }
   }, [formState.client_id, formState.instalacion_cliente_id]);
@@ -4320,6 +4326,7 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
       </form>
 
       {/* Modal de Crear Muestra */}
+      {/* Build: 2026-03-16-v4 - Validaciones cliente y contactos */}
       <MuestraModal
         isOpen={showMuestraModal}
         onClose={() => {
@@ -4345,6 +4352,8 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
         salasCortes={formOptions?.salas_corte || []}
         roleId={getCurrentUserRole()}
         contactosCliente={contactos}
+        clientId={formState.client_id}
+        loadingContactos={loadingContactos}
       />
     </Container>
   );

@@ -366,6 +366,82 @@ const Alert = styled.div<{ $type: 'success' | 'error' }>`
   `}
 `;
 
+// Modal para errores importantes (RUT duplicado)
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+`;
+
+const ModalIcon = styled.div<{ $type: 'warning' | 'error' | 'success' }>`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 2rem;
+
+  ${props => props.$type === 'warning' && `
+    background: #fff3cd;
+    color: #856404;
+  `}
+  ${props => props.$type === 'error' && `
+    background: #f8d7da;
+    color: #721c24;
+  `}
+  ${props => props.$type === 'success' && `
+    background: #d4edda;
+    color: #155724;
+  `}
+`;
+
+const ModalTitle = styled.h3`
+  margin: 0 0 0.5rem;
+  color: ${theme.colors.textPrimary};
+  font-size: 1.25rem;
+`;
+
+const ModalMessage = styled.p`
+  margin: 0 0 1.5rem;
+  color: ${theme.colors.textSecondary};
+  font-size: 0.95rem;
+  line-height: 1.5;
+`;
+
+const ModalButton = styled.button`
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  cursor: pointer;
+  background: ${theme.colors.primary};
+  color: white;
+  border: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #002d66;
+  }
+`;
+
 const TruncatedText = styled.span`
   display: block;
   max-width: 200px;
@@ -389,6 +465,8 @@ export default function ClientsList({ onNavigate }: ClientsListProps) {
   const [editingClientId, setEditingClientId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicateRut, setDuplicateRut] = useState<string | null>(null);
 
   // Debounce search term for automatic filtering - 500ms para dar tiempo de escribir
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -408,7 +486,8 @@ export default function ClientsList({ onNavigate }: ClientsListProps) {
   }, [debouncedSearchTerm, clasificacionFilter, activoFilter]);
 
   // Hooks
-  const { data, isLoading, error } = useClientsList(filters);
+  // isLoading = primera carga, isFetching = recargando en background
+  const { data, isLoading, isFetching, error } = useClientsList(filters);
   const { data: clasificaciones } = useClasificaciones();
   // Issue 3: Obtener datos completos del cliente para edición
   const { data: editingClient, isLoading: isLoadingClient } = useClientDetail(editingClientId);
@@ -456,7 +535,17 @@ export default function ClientsList({ onNavigate }: ClientsListProps) {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: unknown) {
       const error = err as Error;
-      setErrorMessage(error.message || 'Error al guardar cliente');
+      const errorMsg = error.message || 'Error al guardar cliente';
+
+      // Detectar error de RUT duplicado y mostrar modal
+      if (errorMsg.toLowerCase().includes('ya existe') && errorMsg.toLowerCase().includes('rut')) {
+        const rutValue = (formData as ClientCreate).rut || '';
+        setDuplicateRut(rutValue);
+        setShowDuplicateModal(true);
+        setErrorMessage(null);
+      } else {
+        setErrorMessage(errorMsg);
+      }
       setSuccessMessage(null);
     }
   }, [editingClientId, editingClient, createMutation, updateMutation]);
@@ -523,6 +612,11 @@ export default function ClientsList({ onNavigate }: ClientsListProps) {
             </Button>
           </HeaderActions>
         </Header>
+
+        {/* Mensajes de error/éxito en la vista del formulario */}
+        {successMessage && <Alert $type="success">{successMessage}</Alert>}
+        {errorMessage && <Alert $type="error">{errorMessage}</Alert>}
+
         <ClientForm
           client={editingClient || null}
           clasificaciones={clasificaciones || []}
@@ -530,6 +624,28 @@ export default function ClientsList({ onNavigate }: ClientsListProps) {
           onCancel={handleFormClose}
           isLoading={createMutation.isPending || updateMutation.isPending}
         />
+
+        {/* Modal de RUT duplicado */}
+        {showDuplicateModal && (
+          <ModalOverlay onClick={() => setShowDuplicateModal(false)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalIcon $type="warning">⚠️</ModalIcon>
+              <ModalTitle>Cliente ya existe</ModalTitle>
+              <ModalMessage>
+                Ya existe un cliente registrado con el RUT <strong>{duplicateRut}</strong>.
+                <br /><br />
+                Si desea modificar los datos del cliente existente, puede buscarlo en la lista de clientes y editarlo.
+              </ModalMessage>
+              <ModalButton onClick={() => {
+                setShowDuplicateModal(false);
+                setShowForm(false);
+                setEditingClientId(null);
+              }}>
+                Entendido
+              </ModalButton>
+            </ModalContent>
+          </ModalOverlay>
+        )}
       </Container>
     );
   }
@@ -594,13 +710,13 @@ export default function ClientsList({ onNavigate }: ClientsListProps) {
       </FiltersCard>
 
       <ResultsInfo>
-        {isLoading ? 'Buscando...' : `Mostrando ${clients.length} de ${total} clientes`}
+        {isFetching ? 'Buscando...' : `Mostrando ${clients.length} de ${total} clientes`}
       </ResultsInfo>
 
       {error && <Alert $type="error">Error al cargar clientes. Intente nuevamente.</Alert>}
 
       <TableContainer>
-        {isLoading ? (
+        {isLoading && !data ? (
           <LoadingOverlay>
             <Spinner />
             <span>Cargando clientes...</span>

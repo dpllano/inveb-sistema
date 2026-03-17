@@ -114,7 +114,7 @@ const ForgotPasswordLink = styled.button`
 `;
 
 interface LoginProps {
-  onLogin?: (rut: string, password: string) => Promise<boolean>;
+  onLogin?: (rut: string, password: string) => Promise<boolean | string>;
   onNavigate?: (page: string) => void;
 }
 
@@ -162,8 +162,13 @@ export function Login({ onLogin, onNavigate }: LoginProps) {
 
     try {
       if (onLogin) {
-        const success = await onLogin(rut, password);
-        if (!success) {
+        const result = await onLogin(rut, password);
+        if (result === true) {
+          // Login exitoso
+        } else if (typeof result === 'string') {
+          // El backend retornó un mensaje de error específico
+          setError(result);
+        } else {
           setError('RUT o contraseña incorrectos');
         }
       } else {

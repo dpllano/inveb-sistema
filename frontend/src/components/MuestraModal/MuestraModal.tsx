@@ -84,6 +84,8 @@ interface MuestraModalProps {
   contactosCliente?: Array<{ id: string | number; nombre?: string; comuna_id?: number; direccion?: string }>; // Contactos de la instalación seleccionada
   salasCortes?: Array<{ id: string | number; nombre?: string }>; // Plantas de corte para muestras
   roleId?: number; // Issue 12: Para hacer campos readonly para vendedor
+  clientId?: number | null; // Para validar que hay cliente seleccionado antes de mostrar sección Envío Cliente VB
+  loadingContactos?: boolean; // Indica si los contactos se están cargando
 }
 
 const INITIAL_FORM_DATA: MuestraFormData = {
@@ -382,9 +384,12 @@ export function MuestraModal({
   contactosCliente = [],
   salasCortes = [],
   roleId,
+  clientId,
+  loadingContactos = false,
 }: MuestraModalProps) {
   // DEBUG: Verificar props recibidas
-  console.log('MuestraModal props: cads=' + cads.length + ', cartones=' + cartones.length + ', cartonesMuestra=' + cartonesMuestra.length + ', comunas=' + comunas.length + ', contactosCliente=' + contactosCliente.length + ', salasCortes=' + salasCortes.length + ', roleId=' + roleId);
+  // Build: 2026-03-16-v4 - Validaciones cliente y contactos
+  console.log('MuestraModal props: clientId=' + clientId + ', cads=' + cads.length + ', cartones=' + cartones.length + ', cartonesMuestra=' + cartonesMuestra.length + ', comunas=' + comunas.length + ', contactosCliente=' + contactosCliente.length + ', salasCortes=' + salasCortes.length + ', roleId=' + roleId + ', loadingContactos=' + loadingContactos);
 
   const [formData, setFormData] = useState<MuestraFormData>({
     ...INITIAL_FORM_DATA,
@@ -744,8 +749,66 @@ export function MuestraModal({
 
           {/* Envío Cliente VB */}
           {/* Fuente Laravel: muestras-ot.blade.php líneas 641-704 */}
+          {/* Build: 2026-03-16-v4 - Validaciones cliente y contactos */}
           <DestinoSection $visible={destinatariosSeleccionados.clientes}>
             <DestinoTitle>Envío Cliente VB</DestinoTitle>
+
+            {/* Validación: Debe seleccionar cliente primero */}
+            {!clientId && (
+              <div style={{
+                backgroundColor: '#fff3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '4px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span style={{ fontSize: '18px' }}>⚠️</span>
+                <span style={{ color: '#856404', fontWeight: 500 }}>
+                  Debe seleccionar un <strong>Cliente</strong> en el formulario principal antes de configurar el envío.
+                </span>
+              </div>
+            )}
+
+            {/* Mensaje: Cargando contactos */}
+            {clientId && loadingContactos && (
+              <div style={{
+                backgroundColor: '#e3f2fd',
+                border: '1px solid #2196f3',
+                borderRadius: '4px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span style={{ fontSize: '18px' }}>⏳</span>
+                <span style={{ color: '#1565c0' }}>
+                  Cargando contactos del cliente...
+                </span>
+              </div>
+            )}
+
+            {/* Mensaje: No hay contactos disponibles */}
+            {clientId && !loadingContactos && contactosCliente.length === 0 && (
+              <div style={{
+                backgroundColor: '#ffebee',
+                border: '1px solid #f44336',
+                borderRadius: '4px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span style={{ fontSize: '18px' }}>❌</span>
+                <span style={{ color: '#c62828' }}>
+                  El cliente seleccionado no tiene contactos activos configurados. Verifique los datos del cliente o seleccione una instalación.
+                </span>
+              </div>
+            )}
 
             {/* Contactos Cliente 1 - Fuente Laravel línea 646 */}
             <FormGrid $columns={1} style={{ marginBottom: '0.5rem' }}>
@@ -754,8 +817,9 @@ export function MuestraModal({
                 <Select
                   value={formData.contactos_cliente_1 || ''}
                   onChange={(e) => handleContactoChange(1, e.target.value ? Number(e.target.value) : null)}
+                  disabled={!clientId || loadingContactos || contactosCliente.length === 0}
                 >
-                  <option value="">Seleccionar...</option>
+                  <option value="">{loadingContactos ? 'Cargando...' : (contactosCliente.length === 0 ? 'Sin contactos' : 'Seleccionar...')}</option>
                   {contactosCliente.map(contacto => (
                     <option key={String(contacto.id)} value={contacto.id}>{contacto.nombre || contacto.id}</option>
                   ))}

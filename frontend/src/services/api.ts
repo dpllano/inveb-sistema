@@ -53,7 +53,13 @@ api.interceptors.response.use(
       localStorage.removeItem(USER_KEY);
     }
     console.error('[API Error]', error.response?.data || error.message);
-    return Promise.reject(error);
+
+    // Extraer el mensaje de error del backend (campo 'detail')
+    const errorMessage = error.response?.data?.detail || error.message || 'Error desconocido';
+    const enhancedError = new Error(errorMessage);
+    (enhancedError as Error & { originalError: unknown }).originalError = error;
+
+    return Promise.reject(enhancedError);
   }
 );
 

@@ -538,6 +538,15 @@ TABLA_CONFIG: Dict[str, Dict[str, Any]] = {
         "has_active": True,
         "display_name": "Formatos de Etiqueta Pallet"
     },
+    "target_market": {
+        "table": "target_market",
+        "nombre_field": "descripcion",
+        "columns": ["id", "descripcion", "deleted"],
+        "has_active": False,
+        "active_field": "deleted",
+        "active_value_for_true": 0,  # deleted=0 significa activo
+        "display_name": "País Mercado/Destino"
+    },
     "design_types": {
         "table": "design_types",
         "nombre_field": "descripcion",

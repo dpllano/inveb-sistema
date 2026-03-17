@@ -391,7 +391,13 @@ async def update_installation(
     data: InstallationUpdate,
     user_id: int = Depends(get_current_user_id)
 ):
-    """Actualiza una instalacion. Equivalente a Laravel update_installation()."""
+    """
+    Actualiza una instalacion. Equivalente a Laravel update_installation().
+    Build: 2026-03-16 - Fix para campos de configuración de pallet
+    """
+    # Debug: mostrar datos recibidos
+    logger.info(f"[INSTALLATION UPDATE] id={installation_id}, data={data.model_dump()}")
+
     connection = get_mysql_connection()
     try:
         with connection.cursor() as cursor:
