@@ -1,6 +1,6 @@
 # INVEB Cascade Frontend
 # Multi-stage build for React + Vite
-# Force rebuild: 2026-03-16-v10 - Fix user edit not loading complete data (role_id missing)
+# Force rebuild: 2026-03-16-v11 - Fix comentario_vendedor en muestras (texto libre)
 
 # Stage 1: Build
 FROM node:20-alpine AS builder

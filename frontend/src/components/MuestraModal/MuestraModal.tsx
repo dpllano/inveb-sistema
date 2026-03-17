@@ -3,7 +3,7 @@
  * Modal para crear una muestra asociada a una OT
  * Basado en muestras-ot.blade.php y ot-muestras.js de Laravel
  *
- * Build: 2026-03-16-v2 - Fix comunas y contactos
+ * Build: 2026-03-16-v3 - Fix comentario_vendedor ahora es texto libre editable
  */
 
 import { useState, useCallback, useMemo } from 'react';
@@ -96,7 +96,7 @@ const INITIAL_FORM_DATA: MuestraFormData = {
   carton_muestra_id: null,
   destinatarios_id: [],
   cantidad_vendedor: null,
-  comentario_vendedor: 'Retira Vendedor',
+  comentario_vendedor: '',
   cantidad_disenador: null,
   comentario_disenador: '',
   cantidad_disenador_revision: null,
@@ -668,8 +668,7 @@ export function MuestraModal({
                   type="text"
                   value={formData.comentario_vendedor}
                   onChange={(e) => handleInputChange('comentario_vendedor', e.target.value)}
-                  disabled
-                  readOnly
+                  placeholder="Ej: Retira en oficina, Envío por encomienda..."
                 />
               </FormGroup>
             </FormGrid>
