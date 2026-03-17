@@ -1,8 +1,10 @@
-# Railway configuration for INVEB Frontend
 [build]
-builder = "dockerfile"
+builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+watchPatterns = ["src/**", "package.json", "Dockerfile"]
 
 [deploy]
 healthcheckPath = "/"
 healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
