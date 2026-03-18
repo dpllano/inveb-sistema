@@ -177,10 +177,17 @@ class ClientDetail(BaseModel):
 
 
 class ClientCreate(BaseModel):
-    """Schema para crear cliente. Issue 3: Incluir todos los campos de contacto."""
+    """
+    Schema para crear cliente. Issue 3: Incluir todos los campos de contacto.
+
+    codigo_carga: Patron Laravel para permitir crear instalaciones antes de que
+    exista el cliente. Formato: userId + timestamp (ej: "120260318143022")
+    Laravel ref: ClientController.php lineas 162-168
+    """
     rut: str = Field(..., min_length=8, max_length=12, description="RUT chileno")
     nombre_sap: str = Field(..., min_length=1, max_length=255, description="Nombre SAP")
     codigo: Optional[str] = Field(None, max_length=50, description="Codigo interno")
+    codigo_carga: Optional[str] = Field(None, max_length=50, description="Codigo temporal para asociar instalaciones")
     # Contacto 1
     nombre_contacto_1: Optional[str] = Field(None, max_length=255)
     cargo_contacto_1: Optional[str] = Field(None, max_length=255)
@@ -523,11 +530,17 @@ async def create_client(
 ):
     """
     Crea un nuevo cliente.
-    Build: 2026-03-16 - Logging mejorado para diagnóstico
+    Build: 2026-03-18 - Soporte codigo_carga para instalaciones previas
+
+    Patron Laravel (ClientController.php lineas 162-168):
+    1. Obtener instalaciones con codigo_carga como client_id temporal
+    2. Crear el cliente
+    3. Actualizar instalaciones para usar el client_id real
+    4. Actualizar contador de instalaciones del cliente
     """
     import logging
     logger = logging.getLogger(__name__)
-    logger.info(f"[CLIENT CREATE] Recibido: rut={data.rut}, nombre_sap={data.nombre_sap}")
+    logger.info(f"[CLIENT CREATE] Recibido: rut={data.rut}, nombre_sap={data.nombre_sap}, codigo_carga={data.codigo_carga}")
 
     # Validar RUT
     if not validate_rut(data.rut):
@@ -544,10 +557,21 @@ async def create_client(
             if cursor.fetchone():
                 raise HTTPException(status_code=400, detail="Ya existe un cliente con ese RUT")
 
+            # Contar instalaciones previas con codigo_carga (patron Laravel linea 162)
+            instalaciones_count = 0
+            if data.codigo_carga:
+                cursor.execute(
+                    "SELECT COUNT(*) as count FROM installations WHERE client_id = %s AND deleted = 0",
+                    (data.codigo_carga,)
+                )
+                instalaciones_count = cursor.fetchone()['count']
+                logger.info(f"[CLIENT CREATE] Encontradas {instalaciones_count} instalaciones con codigo_carga={data.codigo_carga}")
+
             # Insertar cliente con todos los campos de contacto (Issue 3)
+            # Incluye campo 'instalaciones' con el conteo (Laravel linea 163)
             cursor.execute("""
                 INSERT INTO clients (
-                    rut, nombre, codigo,
+                    rut, nombre, codigo, instalaciones,
                     nombre_contacto, cargo_contacto, email_contacto, phone_contacto,
                     comuna_contacto, direccion_contacto, active_contacto,
                     nombre_contacto_2, cargo_contacto_2, email_contacto_2, phone_contacto_2,
@@ -561,7 +585,7 @@ async def create_client(
                     clasificacion, active,
                     created_at, updated_at
                 ) VALUES (
-                    %s, %s, %s,
+                    %s, %s, %s, %s,
                     %s, %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s, %s, %s,
@@ -571,7 +595,7 @@ async def create_client(
                     NOW(), NOW()
                 )
             """, (
-                formatted_rut, data.nombre_sap, data.codigo,
+                formatted_rut, data.nombre_sap, data.codigo, instalaciones_count,
                 data.nombre_contacto_1, data.cargo_contacto_1, data.email_contacto_1, data.phone_contacto_1,
                 data.comuna_contacto_1, data.direccion_contacto_1, data.active_contacto_1,
                 data.nombre_contacto_2, data.cargo_contacto_2, data.email_contacto_2, data.phone_contacto_2,
@@ -585,8 +609,17 @@ async def create_client(
                 data.clasificacion_id
             ))
 
-            connection.commit()
             client_id = cursor.lastrowid
+
+            # Actualizar instalaciones con codigo_carga para usar client_id real (Laravel lineas 165-166)
+            if data.codigo_carga and instalaciones_count > 0:
+                cursor.execute(
+                    "UPDATE installations SET client_id = %s, updated_at = NOW() WHERE client_id = %s AND deleted = 0",
+                    (client_id, data.codigo_carga)
+                )
+                logger.info(f"[CLIENT CREATE] Actualizadas {cursor.rowcount} instalaciones de codigo_carga={data.codigo_carga} a client_id={client_id}")
+
+            connection.commit()
 
             return ClientResponse(
                 id=client_id,

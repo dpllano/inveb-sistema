@@ -1225,6 +1225,7 @@ export interface ClientCreate {
   rut: string;
   nombre_sap: string;
   codigo?: string;
+  codigo_carga?: string; // Para asociar instalaciones creadas antes de guardar el cliente
   // Contacto 1
   nombre_contacto_1?: string;
   cargo_contacto_1?: string;
@@ -1436,7 +1437,7 @@ export interface InstallationDetail {
 }
 
 export interface InstallationCreate {
-  client_id: number;
+  client_id: number | string; // Soporta client_id (número) o codigo_carga (string)
   nombre?: string;
   tipo_pallet?: number;
   altura_pallet?: number;
@@ -1537,7 +1538,8 @@ export const installationsApi = {
    * Lista instalaciones de un cliente
    * Issue 4: Obtener instalaciones para mostrar en mantenedor
    */
-  getByClient: async (clientId: number): Promise<InstallationListItem[]> => {
+  getByClient: async (clientId: number | string): Promise<InstallationListItem[]> => {
+    // Soporta client_id (número) o codigo_carga (string)
     const response = await api.get<InstallationListItem[]>(`/mantenedores/installations/by-client/${clientId}`);
     return response.data;
   },

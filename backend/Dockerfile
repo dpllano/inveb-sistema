@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Force rebuild: 2026-03-17-v7 - Fix clasificaciones filter: WHERE visible=0 (Laravel ClientController linea 64)
+# Force rebuild: 2026-03-18-v8 - codigo_carga Laravel pattern para instalaciones en cliente nuevo
 # Install dependencies
 COPY src/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && pip list | grep -i crypt

@@ -4,11 +4,11 @@
  * Actualizado para usar la estructura real de la tabla clients
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
 import type { ClientDetail, ClientCreate, ClientUpdate, ClasificacionOption, InstallationListItem, InstallationDetail, InstallationCreate, InstallationUpdate } from '../../services/api';
-import { installationsApi, genericApi } from '../../services/api';
+import { installationsApi, genericApi, authApi } from '../../services/api';
 
 // Types for installation options
 interface SelectOption {
@@ -340,6 +340,16 @@ export default function ClientForm({
 }: ClientFormProps) {
   const isEditing = !!client;
 
+  // Generar codigo_carga para asociar instalaciones durante creación de cliente
+  // Laravel: $codigo_carga = Auth::user()->id . date('ymdhis')
+  const codigoCarga = useMemo(() => {
+    if (isEditing) return null; // No necesario en modo edición
+    const user = authApi.getStoredUser();
+    const userId = user?.id || 0;
+    const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
+    return `${userId}${timestamp}`;
+  }, [isEditing]);
+
   // Form state - Issue 3: Incluir TODOS los campos de contacto (extraído de Laravel)
   const [formData, setFormData] = useState({
     rut: client?.rut || '',
@@ -455,20 +465,25 @@ export default function ClientForm({
     }
   }, [client]);
 
-  // Cargar instalaciones cuando el cliente existe (modo edicion) - Issue 4: Usando installationsApi
+  // Cargar instalaciones - soporta client_id (edición) y codigo_carga (creación)
   const loadInstalaciones = useCallback(async () => {
-    if (!client?.id) {
+    // En modo edición: cargar por client_id
+    // En modo creación: cargar por codigo_carga
+    const identifier = client?.id || codigoCarga;
+
+    if (!identifier) {
       setInstalaciones([]);
       setErrorInstalaciones(null);
       return;
     }
 
-    console.log('[ClientForm] Cargando instalaciones para cliente ID:', client.id);
+    console.log('[ClientForm] Cargando instalaciones para:', isEditing ? `client_id=${client?.id}` : `codigo_carga=${codigoCarga}`);
     setLoadingInstalaciones(true);
     setErrorInstalaciones(null);
 
     try {
-      const data = await installationsApi.getByClient(client.id);
+      // Usar el identificador apropiado (client_id o codigo_carga)
+      const data = await installationsApi.getByClient(identifier);
       console.log('[ClientForm] Instalaciones recibidas:', data);
       setInstalaciones(data || []);
     } catch (err: unknown) {
@@ -479,7 +494,7 @@ export default function ClientForm({
     } finally {
       setLoadingInstalaciones(false);
     }
-  }, [client?.id]);
+  }, [client?.id, codigoCarga, isEditing]);
 
   useEffect(() => {
     loadInstalaciones();
@@ -506,12 +521,19 @@ export default function ClientForm({
   }, []);
 
   const handleInstallationSubmit = useCallback(async (data: InstallationCreate | InstallationUpdate, isNew: boolean) => {
-    if (!client?.id) return;
+    // Soportar tanto client_id (edición) como codigo_carga (creación)
+    const identifier = client?.id || codigoCarga;
+    if (!identifier) return;
 
     setInstallationLoading(true);
     try {
       if (isNew) {
-        await installationsApi.create(data as InstallationCreate);
+        // Al crear, usar el identifier apropiado (client_id o codigo_carga)
+        const createData = {
+          ...data,
+          client_id: identifier, // Puede ser número o string
+        } as InstallationCreate;
+        await installationsApi.create(createData);
       } else if (editingInstallation) {
         await installationsApi.update(editingInstallation.id, data as InstallationUpdate);
       }
@@ -524,7 +546,7 @@ export default function ClientForm({
     } finally {
       setInstallationLoading(false);
     }
-  }, [client?.id, editingInstallation, loadInstalaciones]);
+  }, [client?.id, codigoCarga, editingInstallation, loadInstalaciones]);
 
   const handleDeleteInstallation = useCallback(async (installationId: number) => {
     setInstallationLoading(true);
@@ -637,13 +659,17 @@ export default function ClientForm({
       clasificacion_id: formData.clasificacion_id || undefined,
     };
 
-    // Only include RUT when creating
+    // Only include RUT and codigo_carga when creating
     if (!isEditing) {
       (submitData as ClientCreate).rut = formData.rut;
+      // Incluir codigo_carga para asociar instalaciones creadas previamente
+      if (codigoCarga) {
+        (submitData as ClientCreate & { codigo_carga?: string }).codigo_carga = codigoCarga;
+      }
     }
 
     onSubmit(submitData);
-  }, [formData, validateField, isEditing, onSubmit]);
+  }, [formData, validateField, isEditing, onSubmit, codigoCarga]);
 
   return (
     <FormCard>
@@ -911,48 +937,53 @@ export default function ClientForm({
             </FormGroup>
           </FormGrid>
 
-          {/* Seccion de Instalaciones (solo en modo edicion) - Issue 4: CRUD completo */}
-          {isEditing && (
-            <>
-              <SectionTitle>Instalaciones del Cliente</SectionTitle>
-              {loadingInstalaciones ? (
-                <NoDataText>Cargando instalaciones...</NoDataText>
-              ) : errorInstalaciones ? (
-                <ErrorText>{errorInstalaciones}</ErrorText>
-              ) : instalaciones.length > 0 ? (
-                <InstallationsList>
-                  {instalaciones.map(inst => (
-                    <InstallationItem key={inst.id}>
-                      <InstallationInfo>
-                        <InstallationName>{inst.nombre || 'Sin nombre'}</InstallationName>
-                        {inst.tipo_pallet_nombre && (
-                          <InstallationAddress>Pallet: {inst.tipo_pallet_nombre}</InstallationAddress>
-                        )}
-                        {inst.pais_nombre && (
-                          <InstallationAddress>País: {inst.pais_nombre}</InstallationAddress>
-                        )}
-                      </InstallationInfo>
-                      <InstallationActions>
-                        <ActionButton
-                          type="button"
-                          $variant="edit"
-                          onClick={() => handleEditInstallation(inst.id)}
-                          disabled={installationLoading}
-                        >
-                          Editar
-                        </ActionButton>
-                      </InstallationActions>
-                    </InstallationItem>
-                  ))}
-                </InstallationsList>
-              ) : (
-                <NoDataText>Este cliente no tiene instalaciones registradas.</NoDataText>
-              )}
-              <AddButton type="button" onClick={handleAddInstallation} disabled={installationLoading}>
-                + Agregar Instalación
-              </AddButton>
-            </>
-          )}
+          {/* Seccion de Instalaciones - Disponible en crear y editar (Laravel pattern) */}
+          <>
+            <SectionTitle>Instalaciones del Cliente</SectionTitle>
+            {!isEditing && (
+              <NoDataText style={{ fontStyle: 'normal', color: theme.colors.textSecondary, marginBottom: '0.5rem' }}>
+                Puede agregar instalaciones antes de guardar el cliente.
+              </NoDataText>
+            )}
+            {loadingInstalaciones ? (
+              <NoDataText>Cargando instalaciones...</NoDataText>
+            ) : errorInstalaciones ? (
+              <ErrorText>{errorInstalaciones}</ErrorText>
+            ) : instalaciones.length > 0 ? (
+              <InstallationsList>
+                {instalaciones.map(inst => (
+                  <InstallationItem key={inst.id}>
+                    <InstallationInfo>
+                      <InstallationName>{inst.nombre || 'Sin nombre'}</InstallationName>
+                      {inst.tipo_pallet_nombre && (
+                        <InstallationAddress>Pallet: {inst.tipo_pallet_nombre}</InstallationAddress>
+                      )}
+                      {inst.pais_nombre && (
+                        <InstallationAddress>País: {inst.pais_nombre}</InstallationAddress>
+                      )}
+                    </InstallationInfo>
+                    <InstallationActions>
+                      <ActionButton
+                        type="button"
+                        $variant="edit"
+                        onClick={() => handleEditInstallation(inst.id)}
+                        disabled={installationLoading}
+                      >
+                        Editar
+                      </ActionButton>
+                    </InstallationActions>
+                  </InstallationItem>
+                ))}
+              </InstallationsList>
+            ) : (
+              <NoDataText>
+                {isEditing ? 'Este cliente no tiene instalaciones registradas.' : 'Aún no ha agregado instalaciones.'}
+              </NoDataText>
+            )}
+            <AddButton type="button" onClick={handleAddInstallation} disabled={installationLoading}>
+              + Agregar Instalación
+            </AddButton>
+          </>
 
           <FormActions>
             <Button type="button" onClick={onCancel} disabled={isLoading}>
@@ -965,13 +996,13 @@ export default function ClientForm({
         </form>
       </FormBody>
 
-      {/* Modal de Instalación - Issue 4 */}
-      {showInstallationModal && client?.id && (
+      {/* Modal de Instalación - Soporta client_id (edición) y codigo_carga (creación) */}
+      {showInstallationModal && (client?.id || codigoCarga) && (
         <Modal onClick={handleCloseInstallationModal}>
           <ModalContent onClick={e => e.stopPropagation()}>
             <InstallationForm
               installation={editingInstallation}
-              clientId={client.id}
+              clientId={client?.id || codigoCarga || 0}
               onSubmit={handleInstallationSubmit}
               onCancel={handleCloseInstallationModal}
               onDelete={editingInstallation ? handleDeleteInstallation : undefined}

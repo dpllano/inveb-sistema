@@ -1,6 +1,6 @@
 # INVEB Cascade Frontend
 # Multi-stage build for React + Vite
-# Force rebuild: 2026-03-17-v15 - Fix doble envio instalaciones + sesion expirada
+# Force rebuild: 2026-03-18-v16 - codigo_carga Laravel pattern para instalaciones en cliente nuevo
 
 # Stage 1: Build
 FROM node:20-alpine AS builder

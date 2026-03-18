@@ -215,7 +215,7 @@ interface SelectOption {
 
 interface InstallationFormProps {
   installation: InstallationDetail | null;
-  clientId: number;
+  clientId: number | string; // Soporta client_id (número) o codigo_carga (string)
   onSubmit: (data: InstallationCreate | InstallationUpdate, isNew: boolean) => void;
   onCancel: () => void;
   onDelete?: (id: number) => void;

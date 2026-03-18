@@ -118,8 +118,15 @@ class InstallationBase(BaseModel):
 
 
 class InstallationCreate(InstallationBase):
-    """Schema para crear instalacion."""
-    client_id: int = Field(..., description="ID del cliente")
+    """Schema para crear instalacion.
+
+    client_id puede ser:
+    - int: ID real del cliente (modo edicion)
+    - str: codigo_carga temporal (modo creacion de cliente nuevo)
+
+    El codigo_carga sigue el patron Laravel: Auth::user()->id . date('ymdhis')
+    """
+    client_id: Union[int, str] = Field(..., description="ID del cliente o codigo_carga temporal")
 
 
 class InstallationUpdate(InstallationBase):
@@ -139,7 +146,7 @@ class InstallationListItem(BaseModel):
 
     id: int
     nombre: Optional[str]
-    client_id: int
+    client_id: Union[int, str]  # Puede ser int o string (codigo_carga)
     tipo_pallet_nombre: Optional[str]
     fsc_nombre: Optional[str]
     pais_nombre: Optional[str]
@@ -151,7 +158,7 @@ class InstallationDetail(InstallationBase):
     model_config = ConfigDict(extra='ignore')  # Ignorar campos extra de la BD
 
     id: int
-    client_id: int
+    client_id: Union[int, str]  # Puede ser int o string (codigo_carga)
     tipo_pallet_nombre: Optional[str] = None
     fsc_nombre: Optional[str] = None
     formato_etiqueta_nombre: Optional[str] = None
@@ -165,11 +172,15 @@ class InstallationDetail(InstallationBase):
 
 @router.get("/by-client/{client_id}", response_model=List[InstallationListItem])
 async def get_installations_by_client(
-    client_id: int,
+    client_id: str,  # Acepta string para soportar codigo_carga
     user_id: int = Depends(get_current_user_id)
 ):
     """
     Obtiene instalaciones de un cliente. Usado en cascada Cliente -> Instalacion.
+
+    client_id puede ser:
+    - Un numero (ID real del cliente)
+    - Un string alfanumerico (codigo_carga temporal para clientes nuevos)
 
     NOTA: Intenta hacer JOIN con tabla 'fsc' (singular, como en Laravel).
     Si la tabla no existe en Railway, usa NULL como fallback.
@@ -323,14 +334,29 @@ async def create_installation(
     data: InstallationCreate,
     user_id: int = Depends(get_current_user_id)
 ):
-    """Crea una nueva instalacion. Equivalente a Laravel store_installation()."""
+    """
+    Crea una nueva instalacion. Equivalente a Laravel store_installation().
+
+    Soporta el patron codigo_carga de Laravel:
+    - Si client_id es numerico: verifica que el cliente existe
+    - Si client_id es alfanumerico (codigo_carga): permite crear sin cliente (cliente nuevo)
+
+    Laravel ref: ClientController.php lineas 162-168
+    """
     connection = get_mysql_connection()
     try:
         with connection.cursor() as cursor:
-            # Verificar que el cliente existe
-            cursor.execute("SELECT id FROM clients WHERE id = %s", (data.client_id,))
-            if not cursor.fetchone():
-                raise HTTPException(status_code=404, detail="Cliente no encontrado")
+            # Determinar si es ID real o codigo_carga
+            client_id_str = str(data.client_id)
+            is_codigo_carga = not client_id_str.isdigit()
+
+            # Solo verificar cliente si es ID numerico real
+            if not is_codigo_carga:
+                cursor.execute("SELECT id FROM clients WHERE id = %s", (data.client_id,))
+                if not cursor.fetchone():
+                    raise HTTPException(status_code=404, detail="Cliente no encontrado")
+            else:
+                logger.info(f"[INSTALLATION] Creando con codigo_carga: {data.client_id}")
 
             # Insertar instalacion (basado en Laravel ClientController lineas 184-234)
             cursor.execute("""
