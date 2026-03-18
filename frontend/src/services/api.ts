@@ -47,10 +47,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Si el error es 401, limpiar token
+    // Si el error es 401, limpiar token y forzar logout
     if (error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
+      // Fix 2026-03-17: Disparar evento para forzar logout en React
+      // Esto permite que App.tsx detecte la sesion expirada y muestre login
+      window.dispatchEvent(new CustomEvent('auth:session-expired'));
     }
     console.error('[API Error]', error.response?.data || error.message);
 

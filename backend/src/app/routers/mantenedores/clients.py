@@ -418,14 +418,21 @@ async def list_clients(
 
 @router.get("/clasificaciones", response_model=List[ClasificacionOption])
 async def get_clasificaciones(user_id: int = Depends(get_current_user_id)):
-    """Obtiene lista de clasificaciones para select."""
+    """
+    Obtiene lista de clasificaciones para select.
+
+    Fix 2026-03-17: Agregar filtro visible=0 segun Laravel original
+    Fuente: ClientController.php linea 64:
+    ClasificacionCliente::where('active',1)->where('visible',0)->pluck('name', 'id')->toArray()
+    """
     connection = get_mysql_connection()
     try:
         with connection.cursor() as cursor:
+            # Fix: Agregar filtro visible=0 segun Laravel ClientController linea 64
             cursor.execute("""
                 SELECT id, name as descripcion
                 FROM clasificacion_clientes
-                WHERE active = 1
+                WHERE active = 1 AND visible = 0
                 ORDER BY name
             """)
             return [ClasificacionOption(**row) for row in cursor.fetchall()]

@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Force rebuild: 2026-03-16-v6 - Check user active on login + target_market
+# Force rebuild: 2026-03-17-v7 - Fix clasificaciones filter: WHERE visible=0 (Laravel ClientController linea 64)
 # Install dependencies
 COPY src/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && pip list | grep -i crypt

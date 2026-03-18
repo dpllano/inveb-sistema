@@ -1,6 +1,6 @@
 # INVEB Cascade Frontend
 # Multi-stage build for React + Vite
-# Force rebuild: 2026-03-17-v13 - Archivos adjuntos inline en Seccion 2 (como Laravel original)
+# Force rebuild: 2026-03-17-v14 - Fix clasificaciones en cliente nuevo (visible=0 filter)
 
 # Stage 1: Build
 FROM node:20-alpine AS builder

@@ -1170,6 +1170,21 @@ function AppContent() {
     setAuthPage('login');
   }, []);
 
+  // Fix 2026-03-17: Escuchar evento de sesion expirada para forzar logout
+  // Esto se dispara cuando el interceptor de API detecta un 401
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      console.warn('[App] Sesion expirada, redirigiendo a login...');
+      setUser(null);
+      setAuthPage('login');
+    };
+
+    window.addEventListener('auth:session-expired', handleSessionExpired);
+    return () => {
+      window.removeEventListener('auth:session-expired', handleSessionExpired);
+    };
+  }, []);
+
   // Navegacion de paginas de auth
   const handleAuthNavigate = useCallback((page: string, params?: Record<string, string>) => {
     setAuthPage(page as AuthPage);
