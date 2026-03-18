@@ -293,6 +293,15 @@ export default function InstallationForm({
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  // Fix 2026-03-17: Prevenir doble envío con estado local
+  const [submitting, setSubmitting] = useState(false);
+
+  // Reset submitting cuando isLoading cambie a false (operación completada)
+  useEffect(() => {
+    if (!isLoading && submitting) {
+      setSubmitting(false);
+    }
+  }, [isLoading, submitting]);
 
   // Update form when installation changes
   useEffect(() => {
@@ -392,6 +401,12 @@ export default function InstallationForm({
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
+    // Fix 2026-03-17: Prevenir doble envío
+    if (submitting || isLoading) {
+      console.log('[InstallationForm] Envío ya en progreso, ignorando click');
+      return;
+    }
+
     // Validate all fields
     const newErrors: FormErrors = {};
     newErrors.nombre = validateField('nombre', formData.nombre);
@@ -403,6 +418,9 @@ export default function InstallationForm({
     if (Object.values(newErrors).some(error => error)) {
       return;
     }
+
+    // Marcar como enviando ANTES de llamar a onSubmit
+    setSubmitting(true);
 
     // Build submit data - Incluye los 5 contactos
     // IMPORTANTE: Usar ?? en lugar de || para campos numéricos donde 0 es un valor válido
@@ -456,7 +474,7 @@ export default function InstallationForm({
     }
 
     onSubmit(submitData, !isEditing);
-  }, [formData, validateField, isEditing, clientId, onSubmit]);
+  }, [formData, validateField, isEditing, clientId, onSubmit, submitting, isLoading]);
 
   // Handle delete
   const handleDelete = useCallback(() => {
@@ -735,8 +753,8 @@ export default function InstallationForm({
             <Button type="button" onClick={onCancel} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="submit" $variant="primary" disabled={isLoading}>
-              {isLoading ? 'Guardando...' : isEditing ? 'Actualizar' : 'Crear'}
+            <Button type="submit" $variant="primary" disabled={isLoading || submitting}>
+              {(isLoading || submitting) ? 'Guardando...' : isEditing ? 'Actualizar' : 'Crear'}
             </Button>
           </FormActions>
         </form>
