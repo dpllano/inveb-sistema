@@ -484,7 +484,7 @@ async def get_servicios_maquila(
             cursor.execute(f"""
                 SELECT id, servicio as nombre
                 FROM maquila_servicios
-                WHERE id IN ({placeholders}) AND active = 1
+                WHERE id IN ({placeholders}) AND active IS NOT NULL AND active > 0
                 ORDER BY servicio
             """, servicio_ids)
             rows = cursor.fetchall()
