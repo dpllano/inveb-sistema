@@ -100,6 +100,7 @@ async def list_cotizaciones(
     date_hasta: Optional[str] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
+    current_user: dict = Depends(get_current_user_optional),
 ):
     """
     Lista cotizaciones con filtros y paginación.
@@ -110,6 +111,13 @@ async def list_cotizaciones(
     - user_id: ID del usuario creador
     - cotizacion_id: ID específico
     - date_desde/date_hasta: Rango de fechas (dd/mm/yyyy)
+
+    BRECHA P0 #4 (val jefe_id):
+    - JefeVenta (role_id=3): solo ve cotizaciones de SUS vendedores asignados
+      (creadores con users.jefe_id = current_user.id) + las suyas propias.
+    - Vendedor (role_id=4): solo ve sus propias cotizaciones.
+    - Otros roles: ven todas (sin restricción adicional).
+    Replica filtro legacy CotizacionController.php:79, 168, 218, 305.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -154,6 +162,23 @@ async def list_cotizaciones(
         if cotizacion_id:
             query += " AND c.id = %s"
             params.append(cotizacion_id)
+
+        # =====================================================================
+        # BRECHA P0 #4 — filtro por jefe_id (segregación operacional jefe-equipo)
+        # Origen legacy: CotizacionController.php:79, 168, 218, 305
+        # Doc decisión: aibo/output/inveb-h1/documento/brecha-p0-4-jefe-id-confirmada-codigo.md
+        # =====================================================================
+        cu_role = current_user.get("role_id") if current_user else None
+        cu_id = current_user.get("id") if current_user else None
+        if cu_role == 3 and cu_id:  # JefeVenta — ve solo SUS vendedores + las suyas
+            query += """ AND c.user_id IN (
+                SELECT id FROM users WHERE jefe_id = %s OR id = %s
+            )"""
+            params.extend([cu_id, cu_id])
+        elif cu_role == 4 and cu_id:  # Vendedor — solo las suyas
+            query += " AND c.user_id = %s"
+            params.append(cu_id)
+        # Otros roles: sin restricción adicional (Admin, Gerente, etc.)
 
         # Filtro de fechas
         if date_desde:
@@ -1304,10 +1329,16 @@ async def list_estados():
 async def list_pendientes_aprobacion(
     user_id: Optional[int] = None,
     role_id: Optional[int] = None,
+    current_user: dict = Depends(get_current_user_optional),
 ):
     """
     Lista cotizaciones pendientes de aprobación.
     Filtra según rol del usuario aprobador.
+
+    BRECHA P0 #4 (val jefe_id):
+    - JefeVenta (role_id=3): solo ve aprobaciones de SUS vendedores asignados.
+      Cierra vulnerabilidad de autorización: legacy filtra por jefe_id en
+      CotizacionApprovalController.php:218-222.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -1328,6 +1359,18 @@ async def list_pendientes_aprobacion(
             # Filtrar según nivel de aprobación y rol
             query += " AND c.nivel_aprobacion >= %s"
             params.append(role_id)
+
+        # =================================================================
+        # BRECHA P0 #4 — JefeVenta solo aprueba cotizaciones de SUS vendedores
+        # Origen legacy: CotizacionApprovalController.php:218-222
+        # =================================================================
+        cu_role = current_user.get("role_id") if current_user else None
+        cu_id = current_user.get("id") if current_user else None
+        if cu_role == 3 and cu_id:  # JefeVenta
+            query += """ AND c.user_id IN (
+                SELECT id FROM users WHERE jefe_id = %s
+            )"""
+            params.append(cu_id)
 
         query += " ORDER BY c.created_at DESC"
 

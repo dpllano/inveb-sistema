@@ -38,6 +38,17 @@ from .bitacora import (
     TipoOperacion,
     ObservacionBitacora,
 )
+from .muestra_sala_corte import (
+    MuestraSalaCorte,
+    MuestraSalaCorteCreate,
+    MuestraSalaCorteRead,
+    ROLES_SALA_CORTE,
+)
+from .work_order_cinta_detail import (
+    WorkOrderCintaDetail,
+    WorkOrderCintaDetailCreate,
+    WorkOrderCintaDetailRead,
+)
 
 __all__ = [
     # CascadeRule
@@ -70,4 +81,13 @@ __all__ = [
     "HistorialCambiosResponse",
     "TipoOperacion",
     "ObservacionBitacora",
+    # MuestraSalaCorte - Val 22 (sprint H2)
+    "MuestraSalaCorte",
+    "MuestraSalaCorteCreate",
+    "MuestraSalaCorteRead",
+    "ROLES_SALA_CORTE",
+    # WorkOrderCintaDetail - Val 19 (sprint H2)
+    "WorkOrderCintaDetail",
+    "WorkOrderCintaDetailCreate",
+    "WorkOrderCintaDetailRead",
 ]
