@@ -17,21 +17,30 @@
 --
 -- DEPENDENCIAS
 -- ------------
--- - Tabla `muestras` debe existir (legacy)
--- - Tabla `salas_corte` debe existir (legacy)
+-- - Tabla `muestras` debe existir (legacy) — id es BIGINT UNSIGNED
+-- - Tabla `salas_cortes` debe existir (legacy) — id es INT signed
+--   IMPORTANTE: el nombre real es `salas_cortes` (plural), NO `salas_corte`
 --
 -- IDEMPOTENCIA
 -- ------------
 -- Usa CREATE TABLE IF NOT EXISTS — seguro re-ejecutar.
+--
+-- HISTORIA DE EJECUCION EN PROD (Railway MySQL)
+-- ----------------------------------------------
+-- Primera versión falló por tipos incompatibles con tablas legacy:
+--   - muestra_id era INT UNSIGNED, debe ser BIGINT UNSIGNED (matchear muestras.id)
+--   - sala_corte_id era INT UNSIGNED, debe ser INT signed (matchear salas_cortes.id)
+--   - Tabla referenciada era 'salas_corte', el nombre real es 'salas_cortes'
+-- Versión corregida ejecutada 2026-05-04T22:50 UTC contra Railway prod.
 -- =====================================================================
 
 CREATE TABLE IF NOT EXISTS muestra_salas_corte (
-    id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    muestra_id      INT UNSIGNED NOT NULL,
-    role            VARCHAR(50)  NOT NULL COMMENT 'vendedor | diseñador | laboratorio | cliente_1 | cliente_2 | cliente_3 | cliente_4 | diseñador_revision',
-    sala_corte_id   INT UNSIGNED NOT NULL,
-    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    muestra_id      BIGINT UNSIGNED NOT NULL,
+    role            VARCHAR(50)     NOT NULL COMMENT 'vendedor | diseñador | laboratorio | cliente_1 | cliente_2 | cliente_3 | cliente_4 | diseñador_revision',
+    sala_corte_id   INT             NOT NULL,
+    created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     -- Una sala por role por muestra (no duplicar el rol "vendedor" para la misma muestra)
     UNIQUE KEY uniq_muestra_role (muestra_id, role),
@@ -41,7 +50,7 @@ CREATE TABLE IF NOT EXISTS muestra_salas_corte (
         FOREIGN KEY (muestra_id) REFERENCES muestras (id)
         ON DELETE CASCADE,
     CONSTRAINT fk_muestra_salas_corte_sala
-        FOREIGN KEY (sala_corte_id) REFERENCES salas_corte (id)
+        FOREIGN KEY (sala_corte_id) REFERENCES salas_cortes (id)
         ON DELETE RESTRICT,
 
     -- Índice para acelerar el filtro Técnico Muestras (WHERE sala_corte_id = ?)
