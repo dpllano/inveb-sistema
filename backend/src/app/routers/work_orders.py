@@ -138,7 +138,7 @@ class WorkOrderCreate(BaseModel):
     # Datos Comerciales (requeridos)
     client_id: int = Field(..., description="ID del cliente")
     descripcion: str = Field(..., max_length=40, description="Descripcion del producto")
-    tipo_solicitud: int = Field(..., description="Tipo de solicitud (1-7)")
+    tipo_solicitud: int = Field(..., ge=1, le=7, description="Tipo de solicitud (1-7)")
     canal_id: int = Field(..., description="ID del canal")
 
     # Datos Comerciales (opcionales)
