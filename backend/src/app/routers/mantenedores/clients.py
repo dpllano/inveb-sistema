@@ -175,6 +175,26 @@ class ClientDetail(BaseModel):
     created_at: Optional[str]
     updated_at: Optional[str]
 
+    @field_validator(
+        'active_contacto_1', 'active_contacto_2', 'active_contacto_3', 'active_contacto_4', 'active_contacto_5',
+        mode='before'
+    )
+    @classmethod
+    def normalize_active_contacto(cls, v):
+        """Normaliza int (0/1) y string ('activo'/'inactivo') a string consistente.
+        BD legacy: active_contacto (TINYINT 0/1) vs active_contacto_2..5 (ENUM string).
+        Output API consistente: siempre 'activo' / 'inactivo' o None.
+        """
+        if v is None or v == '':
+            return None
+        if isinstance(v, int):
+            return 'activo' if v == 1 else 'inactivo'
+        if isinstance(v, str):
+            v_lower = v.lower()
+            if v_lower in ('activo', 'inactivo'):
+                return v_lower
+        return v
+
 
 class ClientCreate(BaseModel):
     """
@@ -250,6 +270,25 @@ class ClientCreate(BaseModel):
         # TODO: Reimplementar validación más flexible en Sprint futuro
         return v
 
+    @field_validator(
+        'active_contacto_1', 'active_contacto_2', 'active_contacto_3', 'active_contacto_4', 'active_contacto_5',
+        mode='before'
+    )
+    @classmethod
+    def normalize_active_contacto(cls, v):
+        """Normaliza int (0/1) y string ('activo'/'inactivo') en input.
+        Acepta ambos formatos del frontend, normaliza a string para persistencia consistente.
+        """
+        if v is None or v == '':
+            return None
+        if isinstance(v, int):
+            return 'activo' if v == 1 else 'inactivo'
+        if isinstance(v, str):
+            v_lower = v.lower()
+            if v_lower in ('activo', 'inactivo'):
+                return v_lower
+        return v
+
 
 class ClientUpdate(BaseModel):
     """Schema para actualizar cliente. Issue 3: Incluir todos los campos de contacto."""
@@ -313,6 +352,25 @@ class ClientUpdate(BaseModel):
         """Valida formato de teléfono chileno - Build 2026-03-16: Permitir vacío y formatos flexibles."""
         if not v or v.strip() == '':
             return None
+        return v
+
+    @field_validator(
+        'active_contacto_1', 'active_contacto_2', 'active_contacto_3', 'active_contacto_4', 'active_contacto_5',
+        mode='before'
+    )
+    @classmethod
+    def normalize_active_contacto(cls, v):
+        """Normaliza int (0/1) y string ('activo'/'inactivo') en input PUT.
+        Acepta ambos formatos del frontend, normaliza a string para persistencia consistente.
+        """
+        if v is None or v == '':
+            return None
+        if isinstance(v, int):
+            return 'activo' if v == 1 else 'inactivo'
+        if isinstance(v, str):
+            v_lower = v.lower()
+            if v_lower in ('activo', 'inactivo'):
+                return v_lower
         return v
 
 
