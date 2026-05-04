@@ -241,7 +241,30 @@ class MuestraCreate(BaseModel):
     cantidad_1: Optional[int] = 0
     comentario_1: Optional[str] = Field(None, max_length=191)
     sala_corte_1: Optional[int] = None
-    # Destinatarios adicionales (2, 3, 4) se crean duplicando la muestra según Laravel
+    # Destinos 2/3/4 (clientes externos adicionales) — se replican como muestras separadas
+    destinatario_2: Optional[str] = Field(None, max_length=191)
+    comuna_2: Optional[int] = None
+    direccion_2: Optional[str] = Field(None, max_length=191)
+    cantidad_2: Optional[int] = 0
+    comentario_2: Optional[str] = Field(None, max_length=191)
+    sala_corte_2: Optional[int] = None
+    destinatario_3: Optional[str] = Field(None, max_length=191)
+    comuna_3: Optional[int] = None
+    direccion_3: Optional[str] = Field(None, max_length=191)
+    cantidad_3: Optional[int] = 0
+    comentario_3: Optional[str] = Field(None, max_length=191)
+    sala_corte_3: Optional[int] = None
+    destinatario_4: Optional[str] = Field(None, max_length=191)
+    comuna_4: Optional[int] = None
+    direccion_4: Optional[str] = Field(None, max_length=191)
+    cantidad_4: Optional[int] = 0
+    comentario_4: Optional[str] = Field(None, max_length=191)
+    sala_corte_4: Optional[int] = None
+    # Tipos de destinatarios seleccionados (1=Vendedor, 2=Disenador, 3=Laboratorio, 4=Cliente)
+    destinatarios_id: Optional[List[str]] = Field(
+        None,
+        description="Lista IDs de tipos destinatarios. Si tiene >1 elemento, se replican muestras adicionales por cada uno (BRC-022). Default ['1'] mantiene comportamiento legacy.",
+    )
 
 
 class MuestraCreateResponse(BaseModel):
@@ -598,10 +621,22 @@ async def create_muestra(
             # De lo contrario, estado inicial = 0 (Sin Asignar)
             estado_inicial = 1 if ot['current_area_id'] == 6 else 0
 
-            # Insertar muestra (estructura real de la tabla)
-            # La tabla usa destinatarios_id como JSON array de IDs de destino
-            # Por simplicidad inicial, solo soportamos destino vendedor (1)
-            destinatarios_id = '["1"]'  # Destino vendedor por defecto
+            # =================================================================
+            # BRC-022 a BRC-027 — replicate multi-destinatario (Mundo A)
+            # =================================================================
+            # Legacy MuestraController.php:227,285-356 implementa:
+            #  (a) destinatarios_id viene como array; primera muestra usa el
+            #      primer elemento, replica una muestra adicional por cada
+            #      elemento posterior con destinatarios_id=[id].
+            #  (b) si destinatario_1 + alguno de destinatario_2/3/4 estan set,
+            #      replica una muestra extra para cada destino_N adicional con
+            #      destinatarios_id=[4] y los datos del N en posicion 1.
+            #      Despues limpia destinatario_2/3/4 en el original.
+            # Default ['1'] mantiene comportamiento legacy si frontend no manda.
+            # =================================================================
+            destinatarios_input = list(data.destinatarios_id) if data.destinatarios_id else ["1"]
+            primer_destinatario = destinatarios_input[0]
+            destinatarios_extra = destinatarios_input[1:]  # IDs >1 del array
 
             insert_sql = """
                 INSERT INTO muestras (
@@ -630,26 +665,62 @@ async def create_muestra(
                     %s, %s
                 )
             """
-            cursor.execute(insert_sql, (
+            base_params_factory = lambda destinatarios_id_json, dest1, com1, dir1, cant1, coment1, sala1: (
                 data.work_order_id, user_id, estado_inicial,
                 data.cad, data.cad_id, data.carton_id, data.carton_muestra_id, data.pegado_id,
-                destinatarios_id,
+                destinatarios_id_json,
                 data.cantidad_vendedor or 0, data.comentario_vendedor or "Retira Vendedor",
                 data.cantidad_disenador or 0, data.comentario_disenador,
                 data.cantidad_laboratorio or 0, data.comentario_laboratorio,
                 data.cantidad_disenador_revision or 0, data.comentario_disenador_revision,
                 data.sala_corte_vendedor, data.sala_corte_disenador,
                 data.sala_corte_laboratorio, data.sala_corte_disenador_revision,
-                data.destinatario_1, data.comuna_1, data.direccion_1, data.cantidad_1 or 0, data.comentario_1, data.sala_corte_1,
-                now, now
+                dest1, com1, dir1, cant1 or 0, coment1, sala1,
+                now, now,
+            )
+
+            # 1) Primera muestra con primer_destinatario
+            cursor.execute(insert_sql, base_params_factory(
+                json.dumps([primer_destinatario]),
+                data.destinatario_1, data.comuna_1, data.direccion_1,
+                data.cantidad_1, data.comentario_1, data.sala_corte_1,
             ))
             muestra_id = cursor.lastrowid
+            muestra_ids = [muestra_id]
+
+            # 2) Replicar por cada destinatario adicional del array
+            for dest_id in destinatarios_extra:
+                cursor.execute(insert_sql, base_params_factory(
+                    json.dumps([dest_id]),
+                    data.destinatario_1, data.comuna_1, data.direccion_1,
+                    data.cantidad_1, data.comentario_1, data.sala_corte_1,
+                ))
+                muestra_ids.append(cursor.lastrowid)
+
+            # 3) Replicar por cada destino genérico 2/3/4 con datos seteados.
+            #    Tipo "4" = cliente externo (datos van en posicion 1 del replicate).
+            destinos_genericos = [
+                ("2", data.destinatario_2, data.comuna_2, data.direccion_2, data.cantidad_2, data.comentario_2, data.sala_corte_2),
+                ("3", data.destinatario_3, data.comuna_3, data.direccion_3, data.cantidad_3, data.comentario_3, data.sala_corte_3),
+                ("4", data.destinatario_4, data.comuna_4, data.direccion_4, data.cantidad_4, data.comentario_4, data.sala_corte_4),
+            ]
+            for _idx, dest, com, direc, cant, coment, sala in destinos_genericos:
+                if dest:
+                    cursor.execute(insert_sql, base_params_factory(
+                        json.dumps(["4"]),
+                        dest, com, direc, cant, coment, sala,
+                    ))
+                    muestra_ids.append(cursor.lastrowid)
+
             connection.commit()
 
-            return MuestraCreateResponse(
-                id=muestra_id,
-                message=f"Muestra {muestra_id} creada exitosamente"
+            total_replicas = len(muestra_ids)
+            mensaje = (
+                f"Muestra {muestra_id} creada exitosamente"
+                if total_replicas == 1
+                else f"{total_replicas} muestras creadas (IDs: {muestra_ids})"
             )
+            return MuestraCreateResponse(id=muestra_id, message=mensaje)
 
     except pymysql.Error as e:
         connection.rollback()
