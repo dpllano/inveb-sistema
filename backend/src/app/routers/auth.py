@@ -160,13 +160,14 @@ async def login(request: LoginRequest):
                     detail="RUT o contraseña incorrectos"
                 )
 
-            # Crear token JWT
+            # Crear token JWT (incluye sala_corte_id para filtro Técnico Muestras val 22)
             token_data = {
                 "sub": str(user['id']),
                 "rut": user['rut'],
                 "email": user['email'],
                 "role_id": user['role_id'],
-                "role_nombre": user['role_nombre'] or "Sin rol"
+                "role_nombre": user['role_nombre'] or "Sin rol",
+                "sala_corte_id": user.get('sala_corte_id')
             }
             access_token = create_access_token(token_data)
 

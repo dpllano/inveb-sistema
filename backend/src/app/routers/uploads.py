@@ -160,10 +160,42 @@ async def upload_ot_file(
 
         connection = get_mysql_connection()
         with connection.cursor() as cursor:
-            # Verificar que la OT existe
-            cursor.execute("SELECT id FROM work_orders WHERE id = %s", (ot_id,))
-            if not cursor.fetchone():
+            # Verificar que la OT existe + obtener flags relevantes para validación
+            cursor.execute(
+                "SELECT id, oc FROM work_orders WHERE id = %s",
+                (ot_id,)
+            )
+            ot = cursor.fetchone()
+            if not ot:
                 raise HTTPException(status_code=404, detail="OT no encontrada")
+
+            # =================================================================
+            # VAL 18 — Validación archivo OC condicional (sprint H2 Item 4)
+            # =================================================================
+            # Legacy: validación 'si OC=Sí entonces archivo OC obligatorio' vivía
+            # SOLO en JavaScript inline en blade templates → vulnerabilidad
+            # bypasseable desde Postman/integraciones (val 18).
+            #
+            # Refactor H2: validación backend simétrica:
+            # - Si la OT tiene oc=1 (Sí), permitir subir archivo OC.
+            # - Si la OT tiene oc=0 (No), RECHAZAR upload de archivo OC
+            #   (no tiene sentido subir OC si la OT no la requiere).
+            #
+            # NOTA: la validación complementaria "OT con oc=1 SIN oc_file no
+            # puede aprobarse" debe agregarse en el endpoint de aprobación de
+            # OT (sub-item futuro). Aquí solo cubrimos el upload.
+            # =================================================================
+            if file_type == "oc":
+                ot_oc_flag = ot.get("oc")
+                if ot_oc_flag != 1:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "La OT no tiene OC marcada (oc=1). "
+                            "No se puede subir archivo OC. "
+                            "Marque la OT con oc=1 antes de subir el archivo."
+                        )
+                    )
 
             # Generar nombre unico y guardar archivo
             ensure_upload_dir()

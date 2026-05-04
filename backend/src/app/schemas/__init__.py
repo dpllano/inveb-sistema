@@ -2,6 +2,13 @@
 Schemas Pydantic adicionales del microservicio INVEB Envases OT.
 Los schemas principales están en los modelos SQLModel.
 """
+from .common import (
+    parse_decimal_chile,
+    format_decimal_chile,
+    DecimalChile,
+    OptionalDecimalChile,
+)
+
 from .cotizacion import (
     CotizacionEstadoBase,
     CotizacionEstadoResponse,
@@ -44,6 +51,11 @@ from .detalle_cotizacion import (
 )
 
 __all__ = [
+    # Common - Val 17 sprint H2
+    "parse_decimal_chile",
+    "format_decimal_chile",
+    "DecimalChile",
+    "OptionalDecimalChile",
     # Cotizacion
     "CotizacionEstadoBase",
     "CotizacionEstadoResponse",

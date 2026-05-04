@@ -60,7 +60,11 @@ def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(secu
 
 
 def get_current_user_with_role(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-    """Extrae user_id y role_id del token JWT."""
+    """Extrae user_id, role_id y sala_corte_id del token JWT.
+
+    sala_corte_id es necesario para el filtro Técnico Muestras (val 22).
+    Puede ser None si el usuario no tiene sala asignada.
+    """
     if not credentials:
         raise HTTPException(status_code=401, detail="Token no proporcionado")
     try:
@@ -69,9 +73,11 @@ def get_current_user_with_role(credentials: HTTPAuthorizationCredentials = Depen
             settings.JWT_SECRET_KEY,
             algorithms=[settings.JWT_ALGORITHM]
         )
+        sala_corte_raw = payload.get("sala_corte_id")
         return {
             "user_id": int(payload.get("sub")),
-            "role_id": int(payload.get("role_id", 0))
+            "role_id": int(payload.get("role_id", 0)),
+            "sala_corte_id": int(sala_corte_raw) if sala_corte_raw is not None else None
         }
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expirado")
@@ -6002,6 +6008,7 @@ async def filtro_multiples_ot(
     """
     user_id = current_user["user_id"]
     role_id = current_user["role_id"]
+    sala_corte_id = current_user.get("sala_corte_id")  # Val 22: filtro Técnico Muestras
     connection = get_mysql_connection()
 
     try:
@@ -6156,6 +6163,33 @@ async def filtro_multiples_ot(
                 placeholders = ','.join(['%s'] * len(estados_activos))
                 base_query += f" AND m.state_id IN ({placeholders})"
                 params.extend(estados_activos)
+
+            # =================================================================
+            # VAL 22 — Brecha P0 #2 cerrada: filtro sala_corte para Técnico Muestras
+            # =================================================================
+            # Legacy: WorkOrderController.php:349-416 filtraba OTs por matching
+            # en 8 campos sala_corte_* de la tabla `muestras`. El refactor
+            # original NO portaba esto (regresión de privacidad real).
+            #
+            # Decisión H2 (val 22): tabla N:M `muestra_salas_corte` con role +
+            # sala_corte_id. INVEB ejecuta script SQL 001 + INSERT migración
+            # en cutover. Aquí filtramos por sala_corte del usuario autenticado.
+            #
+            # Política sala_corte_id NULL: TécnicoMuestras sin sala asignada
+            # NO ve ninguna OT (más seguro que ver todas — pregunta para val 28).
+            # =================================================================
+            if role_id in [13, 14]:  # JefeMuestras o TecnicoMuestras
+                if sala_corte_id is not None:
+                    base_query += """ AND wo.id IN (
+                        SELECT m_sc.work_order_id
+                        FROM muestras m_sc
+                        JOIN muestra_salas_corte msc ON msc.muestra_id = m_sc.id
+                        WHERE msc.sala_corte_id = %s
+                    )"""
+                    params.append(sala_corte_id)
+                else:
+                    # Usuario sin sala asignada — no ve nada (seguro por defecto)
+                    base_query += " AND 1 = 0"
 
             # Filtros de fechas
             if date_desde:
