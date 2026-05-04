@@ -69,7 +69,7 @@ Migracion exitosa de Laravel 5.8 a FastAPI + React.
 - React 18
 - TypeScript 5
 - Vite
-- Material UI
+- styled-components 6.1.6
 - React Hook Form + Yup
 - Styled Components
 ```
@@ -306,7 +306,7 @@ GET    /mantenedores/masivos/{tabla}/descargar-excel  # Export
 | 10 | Catalogador | Catalogar productos |
 | 13 | JefeMuestras | Gestionar muestras |
 | 14 | TecnicoMuestras | Producir muestras |
-| 15 | VendedorExterno | Solo tipos 1, 5 |
+| 19 | VendedorExterno | Solo tipos 1, 5 |
 
 ---
 
