@@ -18,34 +18,41 @@
 --
 -- DEPENDENCIAS
 -- ------------
--- - Tabla `work_orders` debe existir (legacy)
+-- - Tabla `work_orders` debe existir (legacy) — id es BIGINT UNSIGNED
 --
 -- IDEMPOTENCIA
 -- ------------
 -- Usa CREATE TABLE IF NOT EXISTS — seguro re-ejecutar.
+--
+-- HISTORIA DE EJECUCION EN PROD (Railway MySQL)
+-- ----------------------------------------------
+-- Primera versión falló por:
+--   - work_order_id era INT UNSIGNED, debe ser BIGINT UNSIGNED (matchear work_orders.id)
+--   - work_orders usa engine MyISAM (NO InnoDB) por lo que NO soporta FK constraints.
+--     La FK fue removida; integridad referencial queda a cargo del código de aplicación
+--     (mismo enfoque que el resto del legacy).
+-- Versión corregida ejecutada 2026-05-04T22:52 UTC contra Railway prod.
 -- =====================================================================
 
 CREATE TABLE IF NOT EXISTS work_order_cinta_details (
-    id                  INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    work_order_id       INT UNSIGNED NOT NULL,
-    corte_liner         INT          NULL,
-    tipo_cinta          INT          NULL,
-    distancia_cinta_1   INT          NULL,
-    distancia_cinta_2   INT          NULL,
-    distancia_cinta_3   INT          NULL,
-    distancia_cinta_4   INT          NULL,
-    distancia_cinta_5   INT          NULL,
-    distancia_cinta_6   INT          NULL,
-    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    work_order_id       BIGINT UNSIGNED NOT NULL,
+    corte_liner         INT             NULL,
+    tipo_cinta          INT             NULL,
+    distancia_cinta_1   INT             NULL,
+    distancia_cinta_2   INT             NULL,
+    distancia_cinta_3   INT             NULL,
+    distancia_cinta_4   INT             NULL,
+    distancia_cinta_5   INT             NULL,
+    distancia_cinta_6   INT             NULL,
+    created_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     -- Una sola fila de detalles por work_order (relación 1:0..1)
     UNIQUE KEY uniq_work_order (work_order_id),
 
-    -- FK explícita con CASCADE: si se elimina la OT, sus detalles se borran
-    CONSTRAINT fk_work_order_cinta_details
-        FOREIGN KEY (work_order_id) REFERENCES work_orders (id)
-        ON DELETE CASCADE
+    -- INDEX en lugar de FK (work_orders es MyISAM, no soporta FKs)
+    KEY idx_work_order_id (work_order_id)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
