@@ -259,36 +259,46 @@ export default function InstallationForm({
     fsc: installation?.fsc ?? null,
     pais_mercado_destino: installation?.pais_mercado_destino ?? null,
     certificado_calidad: installation?.certificado_calidad ?? null,
-    // Contacto 1
+    // Contacto 1 — Sprint 2 BRC-010/011/012 agrega comuna + active
     nombre_contacto: installation?.nombre_contacto || '',
     cargo_contacto: installation?.cargo_contacto || '',
     email_contacto: installation?.email_contacto || '',
     phone_contacto: installation?.phone_contacto || '',
     direccion_contacto: installation?.direccion_contacto || '',
+    comuna_contacto: installation?.comuna_contacto ?? null,
+    active_contacto: installation?.active_contacto || 'inactivo',
     // Contacto 2
     nombre_contacto_2: installation?.nombre_contacto_2 || '',
     cargo_contacto_2: installation?.cargo_contacto_2 || '',
     email_contacto_2: installation?.email_contacto_2 || '',
     phone_contacto_2: installation?.phone_contacto_2 || '',
     direccion_contacto_2: installation?.direccion_contacto_2 || '',
+    comuna_contacto_2: installation?.comuna_contacto_2 ?? null,
+    active_contacto_2: installation?.active_contacto_2 || 'inactivo',
     // Contacto 3
     nombre_contacto_3: installation?.nombre_contacto_3 || '',
     cargo_contacto_3: installation?.cargo_contacto_3 || '',
     email_contacto_3: installation?.email_contacto_3 || '',
     phone_contacto_3: installation?.phone_contacto_3 || '',
     direccion_contacto_3: installation?.direccion_contacto_3 || '',
+    comuna_contacto_3: installation?.comuna_contacto_3 ?? null,
+    active_contacto_3: installation?.active_contacto_3 || 'inactivo',
     // Contacto 4
     nombre_contacto_4: installation?.nombre_contacto_4 || '',
     cargo_contacto_4: installation?.cargo_contacto_4 || '',
     email_contacto_4: installation?.email_contacto_4 || '',
     phone_contacto_4: installation?.phone_contacto_4 || '',
     direccion_contacto_4: installation?.direccion_contacto_4 || '',
+    comuna_contacto_4: installation?.comuna_contacto_4 ?? null,
+    active_contacto_4: installation?.active_contacto_4 || 'inactivo',
     // Contacto 5
     nombre_contacto_5: installation?.nombre_contacto_5 || '',
     cargo_contacto_5: installation?.cargo_contacto_5 || '',
     email_contacto_5: installation?.email_contacto_5 || '',
     phone_contacto_5: installation?.phone_contacto_5 || '',
     direccion_contacto_5: installation?.direccion_contacto_5 || '',
+    comuna_contacto_5: installation?.comuna_contacto_5 ?? null,
+    active_contacto_5: installation?.active_contacto_5 || 'inactivo',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -318,36 +328,46 @@ export default function InstallationForm({
         fsc: installation.fsc,
         pais_mercado_destino: installation.pais_mercado_destino,
         certificado_calidad: installation.certificado_calidad,
-        // Contacto 1
+        // Contacto 1 — Sprint 2 BRC-010/011/012 agrega comuna + active
         nombre_contacto: installation.nombre_contacto || '',
         cargo_contacto: installation.cargo_contacto || '',
         email_contacto: installation.email_contacto || '',
         phone_contacto: installation.phone_contacto || '',
         direccion_contacto: installation.direccion_contacto || '',
+        comuna_contacto: installation.comuna_contacto ?? null,
+        active_contacto: installation.active_contacto || 'inactivo',
         // Contacto 2
         nombre_contacto_2: installation.nombre_contacto_2 || '',
         cargo_contacto_2: installation.cargo_contacto_2 || '',
         email_contacto_2: installation.email_contacto_2 || '',
         phone_contacto_2: installation.phone_contacto_2 || '',
         direccion_contacto_2: installation.direccion_contacto_2 || '',
+        comuna_contacto_2: installation.comuna_contacto_2 ?? null,
+        active_contacto_2: installation.active_contacto_2 || 'inactivo',
         // Contacto 3
         nombre_contacto_3: installation.nombre_contacto_3 || '',
         cargo_contacto_3: installation.cargo_contacto_3 || '',
         email_contacto_3: installation.email_contacto_3 || '',
         phone_contacto_3: installation.phone_contacto_3 || '',
         direccion_contacto_3: installation.direccion_contacto_3 || '',
+        comuna_contacto_3: installation.comuna_contacto_3 ?? null,
+        active_contacto_3: installation.active_contacto_3 || 'inactivo',
         // Contacto 4
         nombre_contacto_4: installation.nombre_contacto_4 || '',
         cargo_contacto_4: installation.cargo_contacto_4 || '',
         email_contacto_4: installation.email_contacto_4 || '',
         phone_contacto_4: installation.phone_contacto_4 || '',
         direccion_contacto_4: installation.direccion_contacto_4 || '',
+        comuna_contacto_4: installation.comuna_contacto_4 ?? null,
+        active_contacto_4: installation.active_contacto_4 || 'inactivo',
         // Contacto 5
         nombre_contacto_5: installation.nombre_contacto_5 || '',
         cargo_contacto_5: installation.cargo_contacto_5 || '',
         email_contacto_5: installation.email_contacto_5 || '',
         phone_contacto_5: installation.phone_contacto_5 || '',
         direccion_contacto_5: installation.direccion_contacto_5 || '',
+        comuna_contacto_5: installation.comuna_contacto_5 ?? null,
+        active_contacto_5: installation.active_contacto_5 || 'inactivo',
       });
     }
   }, [installation]);
@@ -371,7 +391,9 @@ export default function InstallationForm({
     let finalValue: string | number | null;
     if (type === 'number' || name.includes('_pallet') || name.includes('_carga') || name.includes('_zunchado') ||
         name === 'formato_etiqueta' || name === 'termocontraible' || name === 'fsc' ||
-        name === 'pais_mercado_destino' || name === 'certificado_calidad' || name === 'tipo_pallet') {
+        name === 'pais_mercado_destino' || name === 'certificado_calidad' || name === 'tipo_pallet' ||
+        // Sprint 2: comuna_contacto* es int - backend espera int
+        name.startsWith('comuna_contacto')) {
       finalValue = value ? Number(value) : null;
     } else {
       finalValue = value;
@@ -436,36 +458,46 @@ export default function InstallationForm({
       fsc: formData.fsc ?? undefined,
       pais_mercado_destino: formData.pais_mercado_destino || undefined,
       certificado_calidad: formData.certificado_calidad ?? undefined,
-      // Contacto 1
+      // Contacto 1 — Sprint 2 BRC-010/011/012 agrega comuna + active
       nombre_contacto: formData.nombre_contacto || undefined,
       cargo_contacto: formData.cargo_contacto || undefined,
       email_contacto: formData.email_contacto || undefined,
       phone_contacto: formData.phone_contacto || undefined,
       direccion_contacto: formData.direccion_contacto || undefined,
+      comuna_contacto: formData.comuna_contacto ?? undefined,
+      active_contacto: formData.active_contacto || undefined,
       // Contacto 2
       nombre_contacto_2: formData.nombre_contacto_2 || undefined,
       cargo_contacto_2: formData.cargo_contacto_2 || undefined,
       email_contacto_2: formData.email_contacto_2 || undefined,
       phone_contacto_2: formData.phone_contacto_2 || undefined,
       direccion_contacto_2: formData.direccion_contacto_2 || undefined,
+      comuna_contacto_2: formData.comuna_contacto_2 ?? undefined,
+      active_contacto_2: formData.active_contacto_2 || undefined,
       // Contacto 3
       nombre_contacto_3: formData.nombre_contacto_3 || undefined,
       cargo_contacto_3: formData.cargo_contacto_3 || undefined,
       email_contacto_3: formData.email_contacto_3 || undefined,
       phone_contacto_3: formData.phone_contacto_3 || undefined,
       direccion_contacto_3: formData.direccion_contacto_3 || undefined,
+      comuna_contacto_3: formData.comuna_contacto_3 ?? undefined,
+      active_contacto_3: formData.active_contacto_3 || undefined,
       // Contacto 4
       nombre_contacto_4: formData.nombre_contacto_4 || undefined,
       cargo_contacto_4: formData.cargo_contacto_4 || undefined,
       email_contacto_4: formData.email_contacto_4 || undefined,
       phone_contacto_4: formData.phone_contacto_4 || undefined,
       direccion_contacto_4: formData.direccion_contacto_4 || undefined,
+      comuna_contacto_4: formData.comuna_contacto_4 ?? undefined,
+      active_contacto_4: formData.active_contacto_4 || undefined,
       // Contacto 5
       nombre_contacto_5: formData.nombre_contacto_5 || undefined,
       cargo_contacto_5: formData.cargo_contacto_5 || undefined,
       email_contacto_5: formData.email_contacto_5 || undefined,
       phone_contacto_5: formData.phone_contacto_5 || undefined,
       direccion_contacto_5: formData.direccion_contacto_5 || undefined,
+      comuna_contacto_5: formData.comuna_contacto_5 ?? undefined,
+      active_contacto_5: formData.active_contacto_5 || undefined,
     };
 
     // Only include client_id when creating
@@ -492,6 +524,9 @@ export default function InstallationForm({
     const emailField = `email_contacto${suffix}` as keyof typeof formData;
     const phoneField = `phone_contacto${suffix}` as keyof typeof formData;
     const direccionField = `direccion_contacto${suffix}` as keyof typeof formData;
+    // Sprint 2 BRC-010/011/012: comuna + active por contacto
+    const comunaField = `comuna_contacto${suffix}` as keyof typeof formData;
+    const activeField = `active_contacto${suffix}` as keyof typeof formData;
 
     return (
       <ContactSection key={suffix || 'main'}>
@@ -555,6 +590,29 @@ export default function InstallationForm({
               placeholder="Dirección del contacto"
               maxLength={255}
             />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Comuna (ID)</Label>
+            <Input
+              type="number"
+              name={comunaField}
+              value={(formData[comunaField] as number | null) ?? ''}
+              onChange={handleChange}
+              placeholder="ID comuna"
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Estado</Label>
+            <Select
+              name={activeField}
+              value={(formData[activeField] as string) || 'inactivo'}
+              onChange={handleChange}
+            >
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </Select>
           </FormGroup>
         </ContactGrid>
       </ContactSection>
