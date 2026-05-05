@@ -172,14 +172,19 @@ def format_rut(rut: str) -> str:
 
 
 def clean_telefono(telefono: str) -> str:
-    """Limpia y normaliza el telefono (max 10 chars para la BD)"""
+    """Limpia y normaliza el telefono (max 12 chars para la BD: VARCHAR(12)).
+
+    Sprint 4 BRC-014/015: el comportamiento previo recortaba a 9 digitos
+    perdiendo el codigo de pais (+56) que es parte natural del input usuario.
+    La columna BD users.telefono es VARCHAR(12) y acepta '+56912345678' (12).
+    """
     if not telefono:
         return ""
-    # Remover caracteres no numericos excepto +
-    cleaned = re.sub(r'[^\d]', '', telefono)
-    # Si es muy largo (tiene codigo de pais), tomar los ultimos 9 digitos
-    if len(cleaned) > 10:
-        cleaned = cleaned[-9:]
+    # Quitar espacios, parentesis, guiones; conservar + (codigo pais)
+    cleaned = re.sub(r'[\s\-\(\)]', '', telefono)
+    # Truncar a 12 chars maximo (limite VARCHAR(12) en BD)
+    if len(cleaned) > 12:
+        cleaned = cleaned[:12]
     return cleaned
 
 
@@ -470,8 +475,10 @@ async def update_user(
             params.append(data.email)
 
         if data.telefono is not None:
+            # Sprint 4 BRC-015: aplicar clean_telefono igual que en create_user
+            # para evitar truncamiento silencioso del codigo pais en BD VARCHAR(12)
             updates.append("telefono = %s")
-            params.append(data.telefono)
+            params.append(clean_telefono(data.telefono))
 
         if data.password is not None:
             updates.append("password = %s")
