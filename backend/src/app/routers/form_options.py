@@ -397,6 +397,32 @@ def get_trazabilidad_from_db() -> List[SelectOption]:
         return []
 
 
+def get_certificados_calidad_from_db() -> List[SelectOption]:
+    """Obtiene opciones de Certificado de Calidad desde tabla pallet_qas (legacy).
+
+    Sprint 8 BRC-040: la columna work_orders.certificado_calidad apunta a
+    pallet_qas.id (mismo pattern usado en installations.py LEFT JOIN).
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, descripcion
+            FROM pallet_qas
+            WHERE active = 1
+            ORDER BY id
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [
+            SelectOption(value=r['id'], label=r['descripcion'])
+            for r in rows
+        ]
+    except Exception as e:
+        logger.error(f"Error fetching certificados_calidad: {e}")
+        return []
+
+
 def get_design_types_from_db() -> List[SelectOption]:
     """Obtiene tipos de diseño de la base de datos.
     Fuente Laravel: DesignType::where('active', 1)->pluck('descripcion', 'id')
@@ -683,6 +709,21 @@ async def get_tipo_cinta():
 async def get_trazabilidad():
     """Obtiene opciones de trazabilidad de la base de datos."""
     return get_trazabilidad_from_db()
+
+
+# Sprint 8 BRC-040: Certificado de Calidad lista (Sec 7 OT)
+# La columna work_orders.certificado_calidad apunta a tabla pallet_qas (legacy)
+@router.get("/certificados-calidad", response_model=List[SelectOption])
+async def get_certificados_calidad():
+    """Obtiene opciones de Certificado de Calidad de la base de datos.
+
+    Sprint 8 BRC-040: la lista no se desplegaba porque no existia endpoint.
+    La columna work_orders.certificado_calidad referencia tabla `pallet_qas`
+    (legacy), no una tabla `certificados_calidad` propia. Se reusa pallet_qas
+    siguiendo el patron del legacy y de installations.py:277 (LEFT JOIN
+    pallet_qas pq ON i.certificado_calidad = pq.id).
+    """
+    return get_certificados_calidad_from_db()
 
 
 @router.get("/design-types", response_model=List[SelectOption])
