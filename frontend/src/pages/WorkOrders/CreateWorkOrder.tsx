@@ -1013,18 +1013,29 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
     }
   }, [formState.client_id, formState.instalacion_cliente_id]);
 
-  // Issue 39: Cargar datos de la instalación (incluyendo bulto_zunchado) cuando cambia
+  // Issue 39 + Sprint 8 BRC-046/047/048/049/050: Cargar TODOS los campos pallet
+  // de la instalación seleccionada (Sec 7 OT). Legacy ClientController
+  // store_installation guarda 7 campos pallet — el refactor debe propagarlos.
   useEffect(() => {
     if (formState.instalacion_cliente_id) {
       cascadesApi.getInformacionInstalacion(formState.instalacion_cliente_id)
         .then(info => {
           setFormState(prev => ({
             ...prev,
-            // Issue 39: Auto-cargar bulto_zunchado desde la instalación
+            // BRC-050 Tamaño Pallet (legacy: installation.tipo_pallet)
+            tamano_pallet_type_id: info.tipo_pallet_id ?? prev.tamano_pallet_type_id,
+            // BRC-050 Altura Pallet
+            altura_pallet: info.altura_pallet ?? prev.altura_pallet,
+            // BRC-050 Sobresalir Carga
+            permite_sobresalir_carga: info.sobresalir_carga ?? prev.permite_sobresalir_carga,
+            // BRC-047 Bulto Zunchado al Pallet (Issue 39 original)
             bulto_zunchado_pallet: info.bulto_zunchado ?? null,
-            // También cargar otros campos de la instalación si existen
+            // BRC-048 Formato Etiqueta Pallet
             formato_etiqueta_pallet: info.formato_etiqueta ? Number(info.formato_etiqueta) : prev.formato_etiqueta_pallet,
+            // BRC-049 N Etiquetas por Pallet
             etiquetas_por_pallet: info.etiquetas_pallet ?? prev.etiquetas_por_pallet,
+            // BRC-046 Restricción Paletizado: Termocontraíble
+            termocontraible: info.termocontraible ?? prev.termocontraible,
           }));
         })
         .catch(err => console.error('Error cargando información de instalación:', err));
@@ -1032,9 +1043,13 @@ export default function CreateWorkOrder({ onNavigate, initialData }: CreateWorkO
       // Limpiar valores cuando se deselecciona la instalación
       setFormState(prev => ({
         ...prev,
+        tamano_pallet_type_id: null,
+        altura_pallet: null,
+        permite_sobresalir_carga: null,
         bulto_zunchado_pallet: null,
         formato_etiqueta_pallet: null,
         etiquetas_por_pallet: null,
+        termocontraible: null,
       }));
     }
   }, [formState.instalacion_cliente_id]);
