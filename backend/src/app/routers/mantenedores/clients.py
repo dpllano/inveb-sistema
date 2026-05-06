@@ -655,7 +655,11 @@ async def create_client(
             """, (
                 formatted_rut, data.nombre_sap, data.codigo, instalaciones_count,
                 data.nombre_contacto_1, data.cargo_contacto_1, data.email_contacto_1, data.phone_contacto_1,
-                data.comuna_contacto_1, data.direccion_contacto_1, data.active_contacto_1,
+                # Bug fix runtime: clients.active_contacto es TINYINT (0/1) NO ENUM string como
+                # active_contacto_2..5. Frontend envia 'activo'/'inactivo' (string Sprint 1),
+                # convertir a int para TINYINT.
+                data.comuna_contacto_1, data.direccion_contacto_1,
+                (1 if (isinstance(data.active_contacto_1, str) and data.active_contacto_1.lower() == 'activo') else (0 if isinstance(data.active_contacto_1, str) else data.active_contacto_1)),
                 data.nombre_contacto_2, data.cargo_contacto_2, data.email_contacto_2, data.phone_contacto_2,
                 data.comuna_contacto_2, data.direccion_contacto_2, data.active_contacto_2,
                 data.nombre_contacto_3, data.cargo_contacto_3, data.email_contacto_3, data.phone_contacto_3,
@@ -749,8 +753,14 @@ async def update_client(
                 updates.append("direccion_contacto = %s")
                 params.append(data.direccion_contacto_1)
             if data.active_contacto_1 is not None:
+                # Bug fix runtime: clients.active_contacto es TINYINT (0/1) NO ENUM string
+                # como las columnas active_contacto_2..5. Frontend envia 'activo'/'inactivo'
+                # (string consistente Sprint 1) - convertir a 1/0 para TINYINT.
                 updates.append("active_contacto = %s")
-                params.append(data.active_contacto_1)
+                v1 = data.active_contacto_1
+                if isinstance(v1, str):
+                    v1 = 1 if v1.lower() == 'activo' else 0
+                params.append(v1)
             # Contacto 2
             if data.nombre_contacto_2 is not None:
                 updates.append("nombre_contacto_2 = %s")
