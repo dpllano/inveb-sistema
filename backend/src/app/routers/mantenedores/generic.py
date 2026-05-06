@@ -567,22 +567,26 @@ TABLA_CONFIG: Dict[str, Dict[str, Any]] = {
     "coverage_types": {
         "table": "coverage_types",
         "nombre_field": "descripcion",
-        "columns": ["id", "descripcion", "active"],
-        "has_active": True,
+        # Bug fix runtime: BD usa columna `status` (no `active`).
+        # has_active=False evita SELECT/INSERT de columna inexistente.
+        "columns": ["id", "descripcion", "status"],
+        "has_active": False,
         "display_name": "Tipos de Cobertura"
     },
     "impresion": {
         "table": "impresion",
         "nombre_field": "descripcion",
-        "columns": ["id", "descripcion", "active"],
-        "has_active": True,
+        # Bug fix runtime: BD usa columna `status` (no `active`).
+        "columns": ["id", "descripcion", "status"],
+        "has_active": False,
         "display_name": "Tipos de Impresión"
     },
     "ink_types": {
         "table": "ink_types",
         "nombre_field": "descripcion",
-        "columns": ["id", "descripcion", "active"],
-        "has_active": True,
+        # Bug fix runtime: BD usa columna `status` (no `active`).
+        "columns": ["id", "descripcion", "status"],
+        "has_active": False,
         "display_name": "Tipos de Tintas"
     },
     "print_type": {
@@ -595,8 +599,9 @@ TABLA_CONFIG: Dict[str, Dict[str, Any]] = {
     "food_types": {
         "table": "food_types",
         "nombre_field": "descripcion",
-        "columns": ["id", "descripcion", "active"],
-        "has_active": True,
+        # Bug fix runtime: BD NO tiene columna `active` ni `status` - usa `deleted` (TINYINT 0/1).
+        "columns": ["id", "descripcion", "deleted"],
+        "has_active": False,
         "display_name": "Tipos de Alimentos"
     },
     "protection_type": {
