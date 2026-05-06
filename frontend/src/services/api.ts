@@ -1220,7 +1220,7 @@ export interface ClientDetail {
   updated_at: string | null;
 }
 
-// Issue 3: ClientCreate con campos de contacto completos
+// Sprint 1: ClientCreate con 5 contactos completos (BRC-001/004/005, paridad legacy ClientController.php:122-160)
 export interface ClientCreate {
   rut: string;
   nombre_sap: string;
@@ -1232,22 +1232,44 @@ export interface ClientCreate {
   email_contacto_1?: string;
   phone_contacto_1?: string;
   direccion_contacto_1?: string;
+  comuna_contacto_1?: number;
+  active_contacto_1?: string;
   // Contacto 2
   nombre_contacto_2?: string;
   cargo_contacto_2?: string;
   email_contacto_2?: string;
   phone_contacto_2?: string;
   direccion_contacto_2?: string;
+  comuna_contacto_2?: number;
+  active_contacto_2?: string;
   // Contacto 3
   nombre_contacto_3?: string;
   cargo_contacto_3?: string;
   email_contacto_3?: string;
   phone_contacto_3?: string;
   direccion_contacto_3?: string;
+  comuna_contacto_3?: number;
+  active_contacto_3?: string;
+  // Contacto 4 — Sprint 1 BRC-001/004
+  nombre_contacto_4?: string;
+  cargo_contacto_4?: string;
+  email_contacto_4?: string;
+  phone_contacto_4?: string;
+  direccion_contacto_4?: string;
+  comuna_contacto_4?: number;
+  active_contacto_4?: string;
+  // Contacto 5
+  nombre_contacto_5?: string;
+  cargo_contacto_5?: string;
+  email_contacto_5?: string;
+  phone_contacto_5?: string;
+  direccion_contacto_5?: string;
+  comuna_contacto_5?: number;
+  active_contacto_5?: string;
   clasificacion_id?: number;
 }
 
-// Issue 3: ClientUpdate con campos de contacto completos
+// Sprint 1: ClientUpdate con 5 contactos completos (BRC-005)
 export interface ClientUpdate {
   nombre_sap?: string;
   codigo?: string;
@@ -1257,18 +1279,40 @@ export interface ClientUpdate {
   email_contacto_1?: string;
   phone_contacto_1?: string;
   direccion_contacto_1?: string;
+  comuna_contacto_1?: number;
+  active_contacto_1?: string;
   // Contacto 2
   nombre_contacto_2?: string;
   cargo_contacto_2?: string;
   email_contacto_2?: string;
   phone_contacto_2?: string;
   direccion_contacto_2?: string;
+  comuna_contacto_2?: number;
+  active_contacto_2?: string;
   // Contacto 3
   nombre_contacto_3?: string;
   cargo_contacto_3?: string;
   email_contacto_3?: string;
   phone_contacto_3?: string;
   direccion_contacto_3?: string;
+  comuna_contacto_3?: number;
+  active_contacto_3?: string;
+  // Contacto 4 — Sprint 1 BRC-001/004
+  nombre_contacto_4?: string;
+  cargo_contacto_4?: string;
+  email_contacto_4?: string;
+  phone_contacto_4?: string;
+  direccion_contacto_4?: string;
+  comuna_contacto_4?: number;
+  active_contacto_4?: string;
+  // Contacto 5
+  nombre_contacto_5?: string;
+  cargo_contacto_5?: string;
+  email_contacto_5?: string;
+  phone_contacto_5?: string;
+  direccion_contacto_5?: string;
+  comuna_contacto_5?: number;
+  active_contacto_5?: string;
   clasificacion_id?: number;
 }
 

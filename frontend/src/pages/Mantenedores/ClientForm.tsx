@@ -355,24 +355,46 @@ export default function ClientForm({
     rut: client?.rut || '',
     nombre_sap: client?.nombre_sap || '',
     codigo: client?.codigo || '',
-    // Contacto 1
+    // Contacto 1 — BRC-005 agrega comuna + active
     nombre_contacto_1: client?.nombre_contacto_1 || '',
     cargo_contacto_1: client?.cargo_contacto_1 || '',
     email_contacto_1: client?.email_contacto_1 || '',
     phone_contacto_1: client?.phone_contacto_1 || '',
     direccion_contacto_1: client?.direccion_contacto_1 || '',
+    comuna_contacto_1: client?.comuna_contacto_1 || null,
+    active_contacto_1: (client?.active_contacto_1 as string) || 'inactivo',
     // Contacto 2
     nombre_contacto_2: client?.nombre_contacto_2 || '',
     cargo_contacto_2: client?.cargo_contacto_2 || '',
     email_contacto_2: client?.email_contacto_2 || '',
     phone_contacto_2: client?.phone_contacto_2 || '',
     direccion_contacto_2: client?.direccion_contacto_2 || '',
+    comuna_contacto_2: client?.comuna_contacto_2 || null,
+    active_contacto_2: (client?.active_contacto_2 as string) || 'inactivo',
     // Contacto 3
     nombre_contacto_3: client?.nombre_contacto_3 || '',
     cargo_contacto_3: client?.cargo_contacto_3 || '',
     email_contacto_3: client?.email_contacto_3 || '',
     phone_contacto_3: client?.phone_contacto_3 || '',
     direccion_contacto_3: client?.direccion_contacto_3 || '',
+    comuna_contacto_3: client?.comuna_contacto_3 || null,
+    active_contacto_3: (client?.active_contacto_3 as string) || 'inactivo',
+    // Contacto 4 — BRC-001/004 agrega contactos faltantes (legacy ClientController.php:146-152)
+    nombre_contacto_4: client?.nombre_contacto_4 || '',
+    cargo_contacto_4: client?.cargo_contacto_4 || '',
+    email_contacto_4: client?.email_contacto_4 || '',
+    phone_contacto_4: client?.phone_contacto_4 || '',
+    direccion_contacto_4: client?.direccion_contacto_4 || '',
+    comuna_contacto_4: client?.comuna_contacto_4 || null,
+    active_contacto_4: (client?.active_contacto_4 as string) || 'inactivo',
+    // Contacto 5
+    nombre_contacto_5: client?.nombre_contacto_5 || '',
+    cargo_contacto_5: client?.cargo_contacto_5 || '',
+    email_contacto_5: client?.email_contacto_5 || '',
+    phone_contacto_5: client?.phone_contacto_5 || '',
+    direccion_contacto_5: client?.direccion_contacto_5 || '',
+    comuna_contacto_5: client?.comuna_contacto_5 || null,
+    active_contacto_5: (client?.active_contacto_5 as string) || 'inactivo',
     clasificacion_id: client?.clasificacion_id || null,
   });
 
@@ -448,18 +470,40 @@ export default function ClientForm({
         email_contacto_1: client.email_contacto_1 || '',
         phone_contacto_1: client.phone_contacto_1 || '',
         direccion_contacto_1: client.direccion_contacto_1 || '',
+        comuna_contacto_1: client.comuna_contacto_1 || null,
+        active_contacto_1: (client.active_contacto_1 as string) || 'inactivo',
         // Contacto 2
         nombre_contacto_2: client.nombre_contacto_2 || '',
         cargo_contacto_2: client.cargo_contacto_2 || '',
         email_contacto_2: client.email_contacto_2 || '',
         phone_contacto_2: client.phone_contacto_2 || '',
         direccion_contacto_2: client.direccion_contacto_2 || '',
+        comuna_contacto_2: client.comuna_contacto_2 || null,
+        active_contacto_2: (client.active_contacto_2 as string) || 'inactivo',
         // Contacto 3
         nombre_contacto_3: client.nombre_contacto_3 || '',
         cargo_contacto_3: client.cargo_contacto_3 || '',
         email_contacto_3: client.email_contacto_3 || '',
         phone_contacto_3: client.phone_contacto_3 || '',
         direccion_contacto_3: client.direccion_contacto_3 || '',
+        comuna_contacto_3: client.comuna_contacto_3 || null,
+        active_contacto_3: (client.active_contacto_3 as string) || 'inactivo',
+        // Contacto 4 — BRC-001/004
+        nombre_contacto_4: client.nombre_contacto_4 || '',
+        cargo_contacto_4: client.cargo_contacto_4 || '',
+        email_contacto_4: client.email_contacto_4 || '',
+        phone_contacto_4: client.phone_contacto_4 || '',
+        direccion_contacto_4: client.direccion_contacto_4 || '',
+        comuna_contacto_4: client.comuna_contacto_4 || null,
+        active_contacto_4: (client.active_contacto_4 as string) || 'inactivo',
+        // Contacto 5
+        nombre_contacto_5: client.nombre_contacto_5 || '',
+        cargo_contacto_5: client.cargo_contacto_5 || '',
+        email_contacto_5: client.email_contacto_5 || '',
+        phone_contacto_5: client.phone_contacto_5 || '',
+        direccion_contacto_5: client.direccion_contacto_5 || '',
+        comuna_contacto_5: client.comuna_contacto_5 || null,
+        active_contacto_5: (client.active_contacto_5 as string) || 'inactivo',
         clasificacion_id: client.clasificacion_id || null,
       });
     }
@@ -596,9 +640,15 @@ export default function ClientForm({
     // Format RUT if needed
     const finalValue = name === 'rut' ? formatRut(value) : value;
 
+    // Sprint 1: comuna_contacto_* + clasificacion_id se convierten a número (backend espera int)
+    const isNumericField = name === 'clasificacion_id' || name.startsWith('comuna_contacto_');
+    const storedValue = isNumericField
+      ? (value ? Number(value) : null)
+      : finalValue;
+
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'clasificacion_id' ? (value ? Number(value) : null) : finalValue,
+      [name]: storedValue,
     }));
 
     // Validate on change if already touched
@@ -634,7 +684,8 @@ export default function ClientForm({
       return;
     }
 
-    // Build submit data - Issue 3: Incluir todos los campos de contacto
+    // Build submit data — Sprint 1: Incluir 5 contactos completos con comuna + active
+    // (BRC-001/004/005 — replicar paridad legacy ClientController.php:122-160)
     const submitData: ClientCreate | ClientUpdate = {
       nombre_sap: formData.nombre_sap,
       codigo: formData.codigo || undefined,
@@ -644,18 +695,40 @@ export default function ClientForm({
       email_contacto_1: formData.email_contacto_1 || undefined,
       phone_contacto_1: formData.phone_contacto_1 || undefined,
       direccion_contacto_1: formData.direccion_contacto_1 || undefined,
+      comuna_contacto_1: formData.comuna_contacto_1 || undefined,
+      active_contacto_1: formData.active_contacto_1 || undefined,
       // Contacto 2
       nombre_contacto_2: formData.nombre_contacto_2 || undefined,
       cargo_contacto_2: formData.cargo_contacto_2 || undefined,
       email_contacto_2: formData.email_contacto_2 || undefined,
       phone_contacto_2: formData.phone_contacto_2 || undefined,
       direccion_contacto_2: formData.direccion_contacto_2 || undefined,
+      comuna_contacto_2: formData.comuna_contacto_2 || undefined,
+      active_contacto_2: formData.active_contacto_2 || undefined,
       // Contacto 3
       nombre_contacto_3: formData.nombre_contacto_3 || undefined,
       cargo_contacto_3: formData.cargo_contacto_3 || undefined,
       email_contacto_3: formData.email_contacto_3 || undefined,
       phone_contacto_3: formData.phone_contacto_3 || undefined,
       direccion_contacto_3: formData.direccion_contacto_3 || undefined,
+      comuna_contacto_3: formData.comuna_contacto_3 || undefined,
+      active_contacto_3: formData.active_contacto_3 || undefined,
+      // Contacto 4 — BRC-001/004 (faltaba en frontend)
+      nombre_contacto_4: formData.nombre_contacto_4 || undefined,
+      cargo_contacto_4: formData.cargo_contacto_4 || undefined,
+      email_contacto_4: formData.email_contacto_4 || undefined,
+      phone_contacto_4: formData.phone_contacto_4 || undefined,
+      direccion_contacto_4: formData.direccion_contacto_4 || undefined,
+      comuna_contacto_4: formData.comuna_contacto_4 || undefined,
+      active_contacto_4: formData.active_contacto_4 || undefined,
+      // Contacto 5
+      nombre_contacto_5: formData.nombre_contacto_5 || undefined,
+      cargo_contacto_5: formData.cargo_contacto_5 || undefined,
+      email_contacto_5: formData.email_contacto_5 || undefined,
+      phone_contacto_5: formData.phone_contacto_5 || undefined,
+      direccion_contacto_5: formData.direccion_contacto_5 || undefined,
+      comuna_contacto_5: formData.comuna_contacto_5 || undefined,
+      active_contacto_5: formData.active_contacto_5 || undefined,
       clasificacion_id: formData.clasificacion_id || undefined,
     };
 
@@ -810,6 +883,29 @@ export default function ClientForm({
               />
             </FormGroup>
 
+            <FormGroup>
+              <Label>Comuna (ID)</Label>
+              <Input
+                type="number"
+                name="comuna_contacto_1"
+                value={formData.comuna_contacto_1 ?? ''}
+                onChange={handleChange}
+                placeholder="ID comuna"
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Estado</Label>
+              <Select
+                name="active_contacto_1"
+                value={formData.active_contacto_1}
+                onChange={handleChange}
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </Select>
+            </FormGroup>
+
             {/* Contacto 2 - Issue 3: Todos los campos */}
             <SectionTitle style={{ gridColumn: '1 / -1' }}>Contacto Secundario</SectionTitle>
 
@@ -873,6 +969,29 @@ export default function ClientForm({
               />
             </FormGroup>
 
+            <FormGroup>
+              <Label>Comuna (ID)</Label>
+              <Input
+                type="number"
+                name="comuna_contacto_2"
+                value={formData.comuna_contacto_2 ?? ''}
+                onChange={handleChange}
+                placeholder="ID comuna"
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Estado</Label>
+              <Select
+                name="active_contacto_2"
+                value={formData.active_contacto_2}
+                onChange={handleChange}
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </Select>
+            </FormGroup>
+
             {/* Contacto 3 - Issue 3: Todos los campos */}
             <SectionTitle style={{ gridColumn: '1 / -1' }}>Contacto Adicional</SectionTitle>
 
@@ -934,6 +1053,201 @@ export default function ClientForm({
                 placeholder="Dirección del contacto"
                 maxLength={255}
               />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Comuna (ID)</Label>
+              <Input
+                type="number"
+                name="comuna_contacto_3"
+                value={formData.comuna_contacto_3 ?? ''}
+                onChange={handleChange}
+                placeholder="ID comuna"
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Estado</Label>
+              <Select
+                name="active_contacto_3"
+                value={formData.active_contacto_3}
+                onChange={handleChange}
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </Select>
+            </FormGroup>
+
+            {/* Contacto 4 - Sprint 1 BRC-001/004 (faltaba en frontend, legacy ClientController.php:146-152) */}
+            <SectionTitle style={{ gridColumn: '1 / -1' }}>Contacto 4</SectionTitle>
+
+            <FormGroup>
+              <Label>Nombre Contacto</Label>
+              <Input
+                type="text"
+                name="nombre_contacto_4"
+                value={formData.nombre_contacto_4}
+                onChange={handleChange}
+                placeholder="Nombre del contacto"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Cargo</Label>
+              <Input
+                type="text"
+                name="cargo_contacto_4"
+                value={formData.cargo_contacto_4}
+                onChange={handleChange}
+                placeholder="Cargo del contacto"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                name="email_contacto_4"
+                value={formData.email_contacto_4}
+                onChange={handleChange}
+                placeholder="correo@ejemplo.com"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Teléfono</Label>
+              <Input
+                type="text"
+                name="phone_contacto_4"
+                value={formData.phone_contacto_4}
+                onChange={handleChange}
+                placeholder="+56 9 1234 5678"
+                maxLength={20}
+              />
+            </FormGroup>
+
+            <FormGroup $fullWidth>
+              <Label>Dirección</Label>
+              <Input
+                type="text"
+                name="direccion_contacto_4"
+                value={formData.direccion_contacto_4}
+                onChange={handleChange}
+                placeholder="Dirección del contacto"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Comuna (ID)</Label>
+              <Input
+                type="number"
+                name="comuna_contacto_4"
+                value={formData.comuna_contacto_4 ?? ''}
+                onChange={handleChange}
+                placeholder="ID comuna"
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Estado</Label>
+              <Select
+                name="active_contacto_4"
+                value={formData.active_contacto_4}
+                onChange={handleChange}
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </Select>
+            </FormGroup>
+
+            {/* Contacto 5 - Sprint 1 BRC-001/004 (faltaba en frontend, legacy ClientController.php:154-160) */}
+            <SectionTitle style={{ gridColumn: '1 / -1' }}>Contacto 5</SectionTitle>
+
+            <FormGroup>
+              <Label>Nombre Contacto</Label>
+              <Input
+                type="text"
+                name="nombre_contacto_5"
+                value={formData.nombre_contacto_5}
+                onChange={handleChange}
+                placeholder="Nombre del contacto"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Cargo</Label>
+              <Input
+                type="text"
+                name="cargo_contacto_5"
+                value={formData.cargo_contacto_5}
+                onChange={handleChange}
+                placeholder="Cargo del contacto"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                name="email_contacto_5"
+                value={formData.email_contacto_5}
+                onChange={handleChange}
+                placeholder="correo@ejemplo.com"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Teléfono</Label>
+              <Input
+                type="text"
+                name="phone_contacto_5"
+                value={formData.phone_contacto_5}
+                onChange={handleChange}
+                placeholder="+56 9 1234 5678"
+                maxLength={20}
+              />
+            </FormGroup>
+
+            <FormGroup $fullWidth>
+              <Label>Dirección</Label>
+              <Input
+                type="text"
+                name="direccion_contacto_5"
+                value={formData.direccion_contacto_5}
+                onChange={handleChange}
+                placeholder="Dirección del contacto"
+                maxLength={255}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Comuna (ID)</Label>
+              <Input
+                type="number"
+                name="comuna_contacto_5"
+                value={formData.comuna_contacto_5 ?? ''}
+                onChange={handleChange}
+                placeholder="ID comuna"
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Estado</Label>
+              <Select
+                name="active_contacto_5"
+                value={formData.active_contacto_5}
+                onChange={handleChange}
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+              </Select>
             </FormGroup>
           </FormGrid>
 
