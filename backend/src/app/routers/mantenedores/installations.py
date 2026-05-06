@@ -196,19 +196,22 @@ async def get_installations_by_client(
             fsc_exists = cursor.fetchone()['existe'] > 0
 
             if fsc_exists:
-                # Query completa con JOIN a tabla fsc
+                # Query completa con subquery escalar a fsc (evita duplicados).
+                # Bug runtime descubierto: la tabla `fsc` tiene registros duplicados por
+                # `codigo` (ej. codigo=6 aparece en id=7 'FSC solo facturacion' e id=14
+                # 'FSC solo facturacion' duplicado). Un LEFT JOIN multiplicaba las filas
+                # de installations. Subquery escalar con LIMIT 1 garantiza 1 fila.
                 cursor.execute("""
                     SELECT
                         i.id,
                         i.nombre,
                         i.client_id,
                         pt.descripcion as tipo_pallet_nombre,
-                        f.descripcion as fsc_nombre,
+                        (SELECT f.descripcion FROM fsc f WHERE f.codigo = i.fsc LIMIT 1) as fsc_nombre,
                         p.name as pais_nombre,
                         i.active
                     FROM installations i
                     LEFT JOIN pallet_types pt ON i.tipo_pallet = pt.id
-                    LEFT JOIN fsc f ON i.fsc = f.codigo
                     LEFT JOIN paises p ON i.pais_mercado_destino = p.id
                     WHERE i.client_id = %s AND i.deleted = 0
                     ORDER BY i.nombre
