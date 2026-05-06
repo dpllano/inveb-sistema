@@ -361,7 +361,7 @@ export default function JerarquiasList({ nivel: initialNivel }: JerarquiasListPr
         page_size: 20,
         search: search || undefined,
         activo: filterActivo ? parseInt(filterActivo) : undefined,
-        hierarchy_id: filterParent && nivel >= 2 ? parseInt(filterParent) : undefined,
+        hierarchy_id: filterParent && nivel === 2 ? parseInt(filterParent) : undefined,
         subhierarchy_id: filterParent && nivel === 3 ? parseInt(filterParent) : undefined,
       };
 

@@ -8,6 +8,31 @@ import { theme } from '../../theme';
 import { genericApi, type GenericListItem, type TablaInfo } from '../../services/api';
 
 // =============================================
+// FK MAP — columnas tipo *_id que se renderizan como <Select>
+// Mapea columna FK -> tablaKey del mantenedor que provee opciones (id+nombre)
+// Pattern * Sprint Frontend Mantenedores: evita inputs texto para FK numéricas (Q6/Q7/Q8/Q9)
+// =============================================
+const FK_TO_TABLA: Record<string, string> = {
+  proceso_id: 'procesos',
+  process_id: 'procesos',
+  product_type_id: 'tipo_productos',
+  pruduct_type_id: 'tipo_productos',
+  planta_id: 'plantas',
+  armado_id: 'armados',
+  carton_id: 'cartones',
+  style_id: 'estilos',
+  onda_id: 'tipo_ondas',
+  envase_id: 'envases',
+  rubro_id: 'rubros',
+  ciudad_id: 'ciudades_fletes',
+  mercado_id: 'mercados',
+};
+
+const NUMERIC_PATTERNS = [/_id$/, /^tiempo_/, /^cantidad_/, /^porcentaje_/, /^precio/, /^costo/, /^consumo/, /^valor_/, /^factor_/, /^onda_\d+/, /largo$/, /ancho$/, /alto$/, /espesor/, /gramaje/, /total_golpes/, /^d\d+/, /caja_entera/, /^iva$/, /^trim_/, /^ancho_/, /minimo/, /maximo/, /^d[12h]$/];
+
+const isNumericColumn = (col: string): boolean => NUMERIC_PATTERNS.some((re) => re.test(col));
+
+// =============================================
 // STYLED COMPONENTS
 // =============================================
 
@@ -225,6 +250,21 @@ const FormInput = styled.input`
   }
 `;
 
+const FormSelect = styled.select`
+  width: 100%;
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.md};
+  font-size: ${theme.typography.sizes.body};
+  box-sizing: border-box;
+  background: white;
+
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary};
+  }
+`;
+
 const ModalButtons = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -275,6 +315,7 @@ export default function MantenedorGenerico({ tablaKey }: MantenedorGenericoProps
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [fkOptions, setFkOptions] = useState<Record<string, GenericListItem[]>>({});
 
   // Cargar info de tabla
   useEffect(() => {
@@ -291,6 +332,31 @@ export default function MantenedorGenerico({ tablaKey }: MantenedorGenericoProps
     };
     loadTablaInfo();
   }, [tablaKey]);
+
+  // Cargar opciones de FKs (columnas que mapean a otra tabla del mantenedor genérico)
+  useEffect(() => {
+    if (!tablaInfo) return;
+    const fkCols = tablaInfo.columns.filter(c => FK_TO_TABLA[c]);
+    if (fkCols.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      fkCols.map(async (col) => {
+        const fkTabla = FK_TO_TABLA[col];
+        try {
+          const res = await genericApi.list(fkTabla, { page_size: 100, activo: 1 });
+          return [col, res.items] as const;
+        } catch {
+          return [col, [] as GenericListItem[]] as const;
+        }
+      })
+    ).then((entries) => {
+      if (cancelled) return;
+      const map: Record<string, GenericListItem[]> = {};
+      entries.forEach(([col, opts]) => { map[col] = opts; });
+      setFkOptions(map);
+    });
+    return () => { cancelled = true; };
+  }, [tablaInfo]);
 
   // Cargar datos
   const loadData = useCallback(async () => {
@@ -358,10 +424,14 @@ export default function MantenedorGenerico({ tablaKey }: MantenedorGenericoProps
     setSaving(true);
     setErrorMessage(null);
     try {
-      // Convertir formData a tipos correctos
+      // Convertir formData a tipos correctos: FKs y columnas numéricas -> Number
       const data: Record<string, unknown> = {};
       Object.entries(formData).forEach(([key, value]) => {
-        if (value !== '') {
+        if (value === '') return;
+        if (FK_TO_TABLA[key] || isNumericColumn(key)) {
+          const n = Number(value);
+          data[key] = Number.isFinite(n) ? n : value;
+        } else {
           data[key] = value;
         }
       });
@@ -533,16 +603,35 @@ export default function MantenedorGenerico({ tablaKey }: MantenedorGenericoProps
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalTitle>{editingItem ? 'Editar' : 'Crear'} {tablaInfo?.display_name}</ModalTitle>
 
-            {getEditableFields().map((field) => (
-              <FormGroup key={field}>
-                <Label>{field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ')}</Label>
-                <FormInput
-                  type="text"
-                  value={formData[field] || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, [field]: e.target.value }))}
-                />
-              </FormGroup>
-            ))}
+            {getEditableFields().map((field) => {
+              const isFk = !!FK_TO_TABLA[field];
+              const opts = isFk ? (fkOptions[field] || []) : null;
+              const labelText = field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' ');
+              return (
+                <FormGroup key={field}>
+                  <Label>{labelText}</Label>
+                  {isFk ? (
+                    <FormSelect
+                      value={formData[field] || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, [field]: e.target.value }))}
+                    >
+                      <option value="">-- Seleccione --</option>
+                      {opts && opts.map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.codigo ? `${opt.codigo} - ${opt.nombre}` : opt.nombre}
+                        </option>
+                      ))}
+                    </FormSelect>
+                  ) : (
+                    <FormInput
+                      type={isNumericColumn(field) ? 'number' : 'text'}
+                      value={formData[field] || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, [field]: e.target.value }))}
+                    />
+                  )}
+                </FormGroup>
+              );
+            })}
 
             <ModalButtons>
               <Button $variant="secondary" onClick={handleCloseModal}>Cancelar</Button>

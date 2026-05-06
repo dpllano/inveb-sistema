@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { cotizacionesApi, type CotizacionListItem, type CotizacionFilters, type CotizacionEstado } from '../../services/api';
+import { cotizacionesApi, clientsApi, type CotizacionListItem, type CotizacionFilters, type CotizacionEstado } from '../../services/api';
 
 // Styled Components - Diseño Laravel
 const Container = styled.div`
@@ -365,13 +365,13 @@ export default function CotizacionesList({ onNavigate }: CotizacionesListProps) 
     queryFn: () => cotizacionesApi.getEstados(),
   });
 
-  // Query para clientes (simplificado - pendiente implementación)
-  // const { data: clientes } = useQuery({
-  //   queryKey: ['clientes-cotizacion'],
-  //   queryFn: async () => {
-  //     return [];
-  //   },
-  // });
+  // Query para clientes (filtro listbox CLIENTE) - Sprint Frontend Mantenedores
+  const { data: clientesData } = useQuery({
+    queryKey: ['clientes-cotizacion-filter'],
+    queryFn: () => clientsApi.list({ activo: true, page_size: 100 }),
+    staleTime: 1000 * 60 * 10,
+  });
+  const clientes = clientesData?.items ?? [];
 
   // Mutation para eliminar
   const deleteMutation = useMutation({
@@ -412,9 +412,11 @@ export default function CotizacionesList({ onNavigate }: CotizacionesListProps) 
     if (hasta) newFilters.date_hasta = hasta;
     if (numeroCotizacion) newFilters.cotizacion_id = parseInt(numeroCotizacion, 10);
     if (estadoFilter.length > 0) newFilters.estado_id = estadoFilter.map(e => parseInt(e, 10));
+    if (clienteFilter.length > 0) newFilters.client_id = clienteFilter.map(e => parseInt(e, 10));
+    if (cadFilter) newFilters.cad = cadFilter;
 
     setFilters(newFilters);
-  }, [desde, hasta, numeroCotizacion, estadoFilter]);
+  }, [desde, hasta, numeroCotizacion, estadoFilter, clienteFilter, cadFilter]);
 
   const handleCreate = useCallback(() => {
     onNavigate('cotizacion-nueva');
@@ -530,6 +532,11 @@ export default function CotizacionesList({ onNavigate }: CotizacionesListProps) 
               onChange={(e) => setClienteFilter(e.target.value ? [e.target.value] : [])}
             >
               <option value="">Selecciona...</option>
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.codigo ? `${c.codigo} - ${c.nombre_sap}` : c.nombre_sap}
+                </option>
+              ))}
             </FilterSelect>
           </FilterGroup>
 
