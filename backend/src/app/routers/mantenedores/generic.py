@@ -83,8 +83,11 @@ TABLA_CONFIG: Dict[str, Dict[str, Any]] = {
     },
     "matrices": {
         "table": "matrices",
-        "nombre_field": "nombre",
-        "columns": ["id", "nombre", "active"],
+        "nombre_field": "material",
+        # Bug fix runtime: config previo declaraba "nombre" que NO existe en BD
+        # (causaba HTTP 500 en LIST por SELECT de columna inexistente).
+        # Schema real BD: id + plano_cad + material + texto_breve_material + largo/ancho_matriz + tipo_matriz + total_golpes + orden + maquina + cuchillas + active
+        "columns": ["id", "plano_cad", "material", "texto_breve_material", "tipo_matriz", "total_golpes", "orden", "maquina", "active"],
         "has_active": True,
         "display_name": "Matrices"
     },
