@@ -8,7 +8,8 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
 import type { ClientDetail, ClientCreate, ClientUpdate, ClasificacionOption, InstallationListItem, InstallationDetail, InstallationCreate, InstallationUpdate } from '../../services/api';
-import { installationsApi, genericApi, authApi } from '../../services/api';
+import { installationsApi, authApi } from '../../services/api';
+import { useEntityOptions } from '../../hooks/useEntityOptions';
 
 // Types for installation options
 interface SelectOption {
@@ -412,50 +413,21 @@ export default function ClientForm({
   const [installationLoading, setInstallationLoading] = useState(false);
 
   // Opciones para configuración de pallet en instalaciones
-  const [fscOptions, setFscOptions] = useState<SelectOption[]>([]);
-  const [palletQaOptions, setPalletQaOptions] = useState<SelectOption[]>([]);
-  const [palletTagFormatOptions, setPalletTagFormatOptions] = useState<SelectOption[]>([]);
-  const [targetMarketOptions, setTargetMarketOptions] = useState<SelectOption[]>([]);
-
-  // Cargar opciones para configuración de pallet
-  useEffect(() => {
-    const loadPalletOptions = async () => {
-      try {
-        // FSC - usa codigo como value
-        const fscResponse = await genericApi.list('fsc', { page: 1, page_size: 100 });
-        setFscOptions(fscResponse.items.map(item => ({
-          id: item.id,
-          codigo: item.codigo || undefined,
-          descripcion: item.nombre,  // nombre contiene la descripción
-        })));
-
-        // Pallet QAs (Certificado de Calidad)
-        const qaResponse = await genericApi.list('pallet_qas', { page: 1, page_size: 100 });
-        setPalletQaOptions(qaResponse.items.map(item => ({
-          id: item.id,
-          descripcion: item.nombre,
-        })));
-
-        // Pallet Tag Formats (Formato Etiqueta)
-        const tagResponse = await genericApi.list('pallet_tag_formats', { page: 1, page_size: 100 });
-        setPalletTagFormatOptions(tagResponse.items.map(item => ({
-          id: item.id,
-          descripcion: item.nombre,
-        })));
-
-        // Target Market (País Mercado/Destino) - tabla es singular
-        const marketResponse = await genericApi.list('target_market', { page: 1, page_size: 100 });
-        setTargetMarketOptions(marketResponse.items.map(item => ({
-          id: item.id,
-          descripcion: item.nombre,  // nombre contiene descripcion del genérico
-        })));
-      } catch (error) {
-        console.error('[ClientForm] Error loading pallet options:', error);
-      }
-    };
-
-    loadPalletOptions();
-  }, []);
+  // Refactor Sprint 2 P1 (chip 107): hook useEntityOptions reemplaza 4 useState +
+  // useEffect manuales por 4 invocaciones declarativas con cache compartida.
+  const fscMapper = (item: { id: number; nombre: string; codigo?: string | null }): SelectOption => ({
+    id: item.id,
+    codigo: item.codigo || undefined,
+    descripcion: item.nombre,
+  });
+  const descMapper = (item: { id: number; nombre: string }): SelectOption => ({
+    id: item.id,
+    descripcion: item.nombre,
+  });
+  const { data: fscOptions } = useEntityOptions<SelectOption>('fsc', { pageSize: 100, mapper: fscMapper });
+  const { data: palletQaOptions } = useEntityOptions<SelectOption>('pallet_qas', { pageSize: 100, mapper: descMapper });
+  const { data: palletTagFormatOptions } = useEntityOptions<SelectOption>('pallet_tag_formats', { pageSize: 100, mapper: descMapper });
+  const { data: targetMarketOptions } = useEntityOptions<SelectOption>('target_market', { pageSize: 100, mapper: descMapper });
 
   // Update form when client changes - Issue 3: Incluir todos los campos
   useEffect(() => {
