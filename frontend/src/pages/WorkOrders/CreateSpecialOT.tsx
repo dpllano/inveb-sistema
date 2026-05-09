@@ -6,9 +6,10 @@
  * - Licitacion: OTs para procesos de licitacion
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
+import { clientsApi, genericApi, jerarquiasApi, type ClientListItem, type GenericListItem, type ParentOption } from '../../services/api';
 
 // Styled Components
 const Container = styled.div`
@@ -309,6 +310,26 @@ export default function CreateSpecialOT({ onNavigate }: CreateSpecialOTProps) {
     check_ficha_doble: false,
   });
 
+  // Listbox options - Sprint 1 P0 Saneamiento (Chip 107)
+  const [clientes, setClientes] = useState<ClientListItem[]>([]);
+  const [canales, setCanales] = useState<GenericListItem[]>([]);
+  const [jerarquias1, setJerarquias1] = useState<ParentOption[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      clientsApi.list({ activo: true, page_size: 200 }).then(r => r.items).catch(() => [] as ClientListItem[]),
+      genericApi.list('canales', { page_size: 100 }).then(r => r.items).catch(() => [] as GenericListItem[]),
+      jerarquiasApi.getNivel2Parents().catch(() => [] as ParentOption[]),
+    ]).then(([cli, can, j1]) => {
+      if (cancelled) return;
+      setClientes(cli);
+      setCanales(can);
+      setJerarquias1(j1);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   const handleInputChange = useCallback((field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
@@ -402,7 +423,11 @@ export default function CreateSpecialOT({ onNavigate }: CreateSpecialOTProps) {
                     onChange={(e) => handleInputChange('client_id', e.target.value)}
                   >
                     <option value="">Seleccione...</option>
-                    {/* TODO: Load clients from API */}
+                    {clientes.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.codigo ? `${c.codigo} - ${c.nombre_sap}` : c.nombre_sap}
+                      </option>
+                    ))}
                   </Select>
                 </FormGroup>
 
@@ -448,7 +473,9 @@ export default function CreateSpecialOT({ onNavigate }: CreateSpecialOTProps) {
                     onChange={(e) => handleInputChange('canal_id', e.target.value)}
                   >
                     <option value="">Seleccione...</option>
-                    {/* TODO: Load canales from API */}
+                    {canales.map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
                   </Select>
                 </FormGroup>
 
@@ -459,7 +486,9 @@ export default function CreateSpecialOT({ onNavigate }: CreateSpecialOTProps) {
                     onChange={(e) => handleInputChange('hierarchy_id', e.target.value)}
                   >
                     <option value="">Seleccione...</option>
-                    {/* TODO: Load hierarchies from API */}
+                    {jerarquias1.map(j => (
+                      <option key={j.id} value={j.id}>{j.nombre}</option>
+                    ))}
                   </Select>
                 </FormGroup>
 
