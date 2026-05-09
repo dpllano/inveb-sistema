@@ -188,9 +188,9 @@ async def list_materials(
                     m.cad_id,
                     cad.cad AS cad_codigo,
                     m.carton_id,
-                    ct.nombre AS carton_nombre,
+                    ct.codigo AS carton_nombre,
                     m.product_type_id,
-                    pt.nombre AS product_type_nombre,
+                    pt.descripcion AS product_type_nombre,
                     m.active
                 FROM materials m
                 LEFT JOIN clients c ON m.client_id = c.id
@@ -271,8 +271,8 @@ async def get_material(material_id: int):
                     m.*,
                     c.nombre AS client_nombre,
                     cad.cad AS cad_codigo,
-                    ct.nombre AS carton_nombre,
-                    pt.nombre AS product_type_nombre
+                    ct.codigo AS carton_nombre,
+                    pt.descripcion AS product_type_nombre
                 FROM materials m
                 LEFT JOIN clients c ON m.client_id = c.id
                 LEFT JOIN cads cad ON m.cad_id = cad.id
