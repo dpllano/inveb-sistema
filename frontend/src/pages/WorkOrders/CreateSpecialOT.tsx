@@ -9,7 +9,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
-import { clientsApi, genericApi, jerarquiasApi, type ClientListItem, type GenericListItem, type ParentOption } from '../../services/api';
+import { clientsApi, jerarquiasApi, type ClientListItem, type ParentOption } from '../../services/api';
+import { useEntityOptions } from '../../hooks/useEntityOptions';
 
 // Styled Components
 const Container = styled.div`
@@ -310,21 +311,21 @@ export default function CreateSpecialOT({ onNavigate }: CreateSpecialOTProps) {
     check_ficha_doble: false,
   });
 
-  // Listbox options - Sprint 1 P0 Saneamiento (Chip 107)
+  // Listbox options - Sprint 1+2 P0/P1 (Chip 107)
+  // Clientes via clientsApi (no es mantenedor generico) y jerarquias via jerarquiasApi.
+  // Canales sale del hook reutilizable useEntityOptions.
   const [clientes, setClientes] = useState<ClientListItem[]>([]);
-  const [canales, setCanales] = useState<GenericListItem[]>([]);
   const [jerarquias1, setJerarquias1] = useState<ParentOption[]>([]);
+  const { data: canales } = useEntityOptions('canales', { pageSize: 100 });
 
   useEffect(() => {
     let cancelled = false;
     Promise.all([
       clientsApi.list({ activo: true, page_size: 200 }).then(r => r.items).catch(() => [] as ClientListItem[]),
-      genericApi.list('canales', { page_size: 100 }).then(r => r.items).catch(() => [] as GenericListItem[]),
       jerarquiasApi.getNivel2Parents().catch(() => [] as ParentOption[]),
-    ]).then(([cli, can, j1]) => {
+    ]).then(([cli, j1]) => {
       if (cancelled) return;
       setClientes(cli);
-      setCanales(can);
       setJerarquias1(j1);
     });
     return () => { cancelled = true; };

@@ -677,8 +677,10 @@ async def get_filter_options():
             """)
             options['impresiones'] = cursor.fetchall()
 
-            # Procesos - Issue 47: Filtrar por type='EV' y ordenar por 'orden' (igual que Laravel)
-            cursor.execute("SELECT id, descripcion as nombre FROM processes WHERE active = 1 AND type = 'EV' ORDER BY orden ASC")
+            # Procesos - Sprint 2 P1 (chip 107): retirar filtro type='EV' porque BD legacy tiene
+            # la columna `type` corrupta con timestamps (no valores categoricos). Mismo workaround
+            # aplicado en /work-orders form-options para consistencia. Sprint Obj 9 CMPC: cleanup.
+            cursor.execute("SELECT id, descripcion as nombre FROM processes WHERE active = 1 ORDER BY COALESCE(orden, 999) ASC, descripcion")
             options['procesos'] = cursor.fetchall()
 
             # Estilos
