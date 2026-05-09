@@ -1,0 +1,597 @@
+{
+  "fecha": "2026-05-09T12:15:04.240467",
+  "roles_auditados": 18,
+  "endpoints_auditados": 20,
+  "matriz": {
+    "1-ADMIN": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "2-GERENTE_GENERAL": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "3-JEFE_VENTAS": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "4-VENDEDOR": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "5-JEFE_DESARROLLO": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "6-INGENIERO": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "7-JEFE_DISENO": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "8-DISENADOR": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "9-JEFE_PRECATALOGADOR": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "10-PRECATALOGADOR": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "11-JEFE_CATALOGADOR": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "12-CATALOGADOR": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "13-JEFE_MUESTRAS": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "14-TECNICO_MUESTRAS": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "15-GERENTE_COMERCIAL": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "16-VISUALIZADOR": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "18-SUPER_ADMIN": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    },
+    "19-VENDEDOR_EXTERNO": {
+      "GET /auth/me": 200,
+      "GET /auth/roles": 200,
+      "GET /mantenedores/clients/?page_size=1": 200,
+      "GET /mantenedores/generic/canales": 200,
+      "GET /mantenedores/generic/procesos": 200,
+      "GET /mantenedores/jerarquias/nivel1?page_size=1": 200,
+      "GET /mantenedores/jerarquias/nivel2/parents": 200,
+      "GET /mantenedores/jerarquias/nivel3/parents": 200,
+      "GET /cotizaciones/?page_size=1": 200,
+      "GET /cotizaciones/estados/": 200,
+      "GET /work-orders/?page_size=1": 200,
+      "GET /work-orders/filter-options": 200,
+      "GET /work-orders/form-options-complete": 200,
+      "GET /cascades/jerarquias/nivel2-rubro?hierarchy_id=1": 200,
+      "GET /areahc/form-options-complete": 200,
+      "GET /form-options/certificados-calidad": 200,
+      "GET /reports/dashboard": 404,
+      "GET /muestras/?page_size=1": 405,
+      "GET /materials/?page_size=1": 200,
+      "GET /uploads/": 404
+    }
+  },
+  "endpoints_def": [
+    [
+      "GET",
+      "/auth/me",
+      "Profile propio"
+    ],
+    [
+      "GET",
+      "/auth/roles",
+      "Catalogo roles"
+    ],
+    [
+      "GET",
+      "/mantenedores/clients/?page_size=1",
+      "Lista clientes"
+    ],
+    [
+      "GET",
+      "/mantenedores/generic/canales",
+      "Lista canales"
+    ],
+    [
+      "GET",
+      "/mantenedores/generic/procesos",
+      "Lista procesos"
+    ],
+    [
+      "GET",
+      "/mantenedores/jerarquias/nivel1?page_size=1",
+      "Jerarquias N1"
+    ],
+    [
+      "GET",
+      "/mantenedores/jerarquias/nivel2/parents",
+      "Jerarquias N2 parents"
+    ],
+    [
+      "GET",
+      "/mantenedores/jerarquias/nivel3/parents",
+      "Jerarquias N3 parents"
+    ],
+    [
+      "GET",
+      "/cotizaciones/?page_size=1",
+      "Lista cotizaciones"
+    ],
+    [
+      "GET",
+      "/cotizaciones/estados/",
+      "Estados cotizacion"
+    ],
+    [
+      "GET",
+      "/work-orders/?page_size=1",
+      "Lista OTs"
+    ],
+    [
+      "GET",
+      "/work-orders/filter-options",
+      "Filter options OT"
+    ],
+    [
+      "GET",
+      "/work-orders/form-options-complete",
+      "Form options OT"
+    ],
+    [
+      "GET",
+      "/cascades/jerarquias/nivel2-rubro?hierarchy_id=1",
+      "Cascada N2"
+    ],
+    [
+      "GET",
+      "/areahc/form-options-complete",
+      "Form options cotizador"
+    ],
+    [
+      "GET",
+      "/form-options/certificados-calidad",
+      "Certificados calidad"
+    ],
+    [
+      "GET",
+      "/reports/dashboard",
+      "Dashboard reports"
+    ],
+    [
+      "GET",
+      "/muestras/?page_size=1",
+      "Lista muestras"
+    ],
+    [
+      "GET",
+      "/materials/?page_size=1",
+      "Lista materials"
+    ],
+    [
+      "GET",
+      "/uploads/",
+      "Uploads list"
+    ]
+  ],
+  "roles_def": [
+    [
+      1,
+      "ADMIN",
+      1
+    ],
+    [
+      2,
+      "GERENTE_GENERAL",
+      2
+    ],
+    [
+      3,
+      "JEFE_VENTAS",
+      3
+    ],
+    [
+      4,
+      "VENDEDOR",
+      4
+    ],
+    [
+      5,
+      "JEFE_DESARROLLO",
+      5
+    ],
+    [
+      6,
+      "INGENIERO",
+      6
+    ],
+    [
+      7,
+      "JEFE_DISENO",
+      7
+    ],
+    [
+      8,
+      "DISENADOR",
+      8
+    ],
+    [
+      9,
+      "JEFE_PRECATALOGADOR",
+      9
+    ],
+    [
+      10,
+      "PRECATALOGADOR",
+      10
+    ],
+    [
+      11,
+      "JEFE_CATALOGADOR",
+      11
+    ],
+    [
+      12,
+      "CATALOGADOR",
+      12
+    ],
+    [
+      13,
+      "JEFE_MUESTRAS",
+      160
+    ],
+    [
+      14,
+      "TECNICO_MUESTRAS",
+      161
+    ],
+    [
+      15,
+      "GERENTE_COMERCIAL",
+      1
+    ],
+    [
+      16,
+      "VISUALIZADOR",
+      1
+    ],
+    [
+      18,
+      "SUPER_ADMIN",
+      1
+    ],
+    [
+      19,
+      "VENDEDOR_EXTERNO",
+      139
+    ]
+  ]
+}
