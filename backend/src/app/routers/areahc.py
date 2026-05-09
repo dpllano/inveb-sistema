@@ -677,11 +677,12 @@ async def get_form_options_complete():
         options['cartons'] = cursor.fetchall()
 
         # ========== Máquinas Impresoras ==========
+        # BD legacy usa columna `deleted` (TINYINT) NO `active`. NULL u 0 = vivo.
         try:
             cursor.execute("""
                 SELECT id, descripcion as nombre
                 FROM printing_machines
-                WHERE active = 1
+                WHERE deleted IS NULL OR deleted = 0
                 ORDER BY descripcion
             """)
             options['printing_machines'] = cursor.fetchall()
@@ -689,11 +690,11 @@ async def get_form_options_complete():
             options['printing_machines'] = []
 
         # ========== Tipos de Impresión ==========
+        # Tabla real BD: `print_type` (singular), no `print_types`.
         try:
             cursor.execute("""
                 SELECT id, descripcion as nombre
-                FROM print_types
-                WHERE active = 1
+                FROM print_type
                 ORDER BY descripcion
             """)
             options['print_types'] = cursor.fetchall()
@@ -718,10 +719,11 @@ async def get_form_options_complete():
             ]
 
         # ========== Tipos de Barniz ==========
+        # Tabla real BD: `tipo_barniz` (no `barniz_types`).
         try:
             cursor.execute("""
                 SELECT id, descripcion as nombre
-                FROM barniz_types
+                FROM tipo_barniz
                 WHERE active = 1
                 ORDER BY descripcion
             """)
@@ -730,11 +732,12 @@ async def get_form_options_complete():
             options['barniz_types'] = []
 
         # ========== Tipos de Tinta ==========
+        # BD usa columna `status` (no `active`).
         try:
             cursor.execute("""
                 SELECT id, descripcion as nombre
                 FROM ink_types
-                WHERE active = 1
+                WHERE status = 1
                 ORDER BY descripcion
             """)
             options['ink_types'] = cursor.fetchall()
@@ -782,10 +785,11 @@ async def get_form_options_complete():
             options['hierarchies'] = []
 
         # ========== Cartones para Esquinero ==========
+        # Tabla real BD: `carton_esquineros` (con e final, no `cartons_esquinero`).
         try:
             cursor.execute("""
                 SELECT id, codigo as nombre
-                FROM cartons_esquinero
+                FROM carton_esquineros
                 WHERE active = 1
                 ORDER BY codigo
             """)
@@ -794,12 +798,12 @@ async def get_form_options_complete():
             options['cartons_esquinero'] = []
 
         # ========== Servicios de Maquila ==========
-        # Issue 49: El campo correcto es 'servicio', no 'descripcion' (según Laravel)
+        # Columna `active` en esta tabla NO es booleano - guarda valores int (0,3,5,9,NULL)
+        # con semantica historica de Laravel. Para listbox del cotizador, retornar todos.
         try:
             cursor.execute("""
                 SELECT id, servicio as nombre
                 FROM maquila_servicios
-                WHERE active = 1
                 ORDER BY servicio
             """)
             options['maquila_servicios'] = cursor.fetchall()

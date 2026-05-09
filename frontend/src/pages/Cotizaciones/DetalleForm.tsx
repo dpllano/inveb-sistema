@@ -9,6 +9,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import CalculoHCModal from './CalculoHCModal';
+import { cascadesApi } from '../../services/api';
 
 // API Base URL
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1';
@@ -502,6 +503,8 @@ export default function DetalleForm({
   const [calculoModalMode, setCalculoModalMode] = useState<'carton' | 'calculo_hc' | 'ambos'>('ambos');
   const [options, setOptions] = useState<FormOptions>(DEFAULT_OPTIONS);
   const [loadingOptions, setLoadingOptions] = useState(true);
+  const [subhierarchies, setSubhierarchies] = useState<Array<{ id: number; nombre: string }>>([]);
+  const [subsubhierarchies, setSubsubhierarchies] = useState<Array<{ id: number; nombre: string }>>([]);
 
   const isEditing = !!detalle?.id;
   const isCorrugado = formData.tipo_detalle_id === 1;
@@ -530,6 +533,26 @@ export default function DetalleForm({
   // NOTA: En Laravel, Area HC NO se calcula automáticamente desde anchura/largura.
   // Solo se modifica mediante el botón "Cálculo AHC" o ingreso manual.
   // El cálculo automático fue removido para igualar el comportamiento de Laravel.
+
+  // Cargar Jerarquia 2 (subhierarchies) cuando cambia hierarchy_id
+  useEffect(() => {
+    if (!formData.hierarchy_id) { setSubhierarchies([]); return; }
+    let cancelled = false;
+    cascadesApi.getJerarquia2Rubro(formData.hierarchy_id)
+      .then((opts) => { if (!cancelled) setSubhierarchies(opts); })
+      .catch(() => { if (!cancelled) setSubhierarchies([]); });
+    return () => { cancelled = true; };
+  }, [formData.hierarchy_id]);
+
+  // Cargar Jerarquia 3 (subsubhierarchies) cuando cambia subhierarchy_id
+  useEffect(() => {
+    if (!formData.subhierarchy_id) { setSubsubhierarchies([]); return; }
+    let cancelled = false;
+    cascadesApi.getJerarquia3Rubro(formData.subhierarchy_id)
+      .then((opts) => { if (!cancelled) setSubsubhierarchies(opts); })
+      .catch(() => { if (!cancelled) setSubsubhierarchies([]); });
+    return () => { cancelled = true; };
+  }, [formData.subhierarchy_id]);
 
   // Calcular BCT KG desde LB
   useEffect(() => {
@@ -1418,8 +1441,12 @@ export default function DetalleForm({
                         name="subhierarchy_id"
                         value={formData.subhierarchy_id || ''}
                         onChange={handleChange}
+                        disabled={!formData.hierarchy_id}
                       >
                         <option value="">Seleccionar...</option>
+                        {subhierarchies.map(opt => (
+                          <option key={opt.id} value={opt.id}>{opt.nombre}</option>
+                        ))}
                       </Select>
                     </FormGroup>
 
@@ -1430,8 +1457,12 @@ export default function DetalleForm({
                         name="subsubhierarchy_id"
                         value={formData.subsubhierarchy_id || ''}
                         onChange={handleChange}
+                        disabled={!formData.subhierarchy_id}
                       >
                         <option value="">Seleccionar...</option>
+                        {subsubhierarchies.map(opt => (
+                          <option key={opt.id} value={opt.id}>{opt.nombre}</option>
+                        ))}
                       </Select>
                     </FormGroup>
                   </CardBody>
