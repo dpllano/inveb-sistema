@@ -13,6 +13,8 @@ from ...validators import validar_rut_chileno, validar_telefono_chileno
 
 from ...database import get_db_connection
 from ...dependencies import get_current_user
+from ...rbac_dependencies import require_role
+from ...roles_catalog import RoleId
 
 router = APIRouter(
     prefix="/mantenedores/users",
@@ -375,12 +377,16 @@ async def get_user(
         conn.close()
 
 
-@router.post("/", response_model=UserResponse)
+@router.post(
+    "/",
+    response_model=UserResponse,
+    dependencies=[Depends(require_role([RoleId.ADMIN, RoleId.SUPER_ADMIN]))],
+)
 async def create_user(
     data: UserCreate,
     current_user: dict = Depends(get_current_user),
 ):
-    """Crea un nuevo usuario"""
+    """Crea un nuevo usuario. Sprint 3.5 P0: solo ADMIN/SUPER_ADMIN."""
     # Validate RUT
     if not validate_rut(data.rut):
         raise HTTPException(status_code=400, detail="RUT invalido")
@@ -436,12 +442,17 @@ async def create_user(
         conn.close()
 
 
-@router.put("/{user_id}", response_model=UserResponse)
+@router.put(
+    "/{user_id}",
+    response_model=UserResponse,
+    dependencies=[Depends(require_role([RoleId.ADMIN, RoleId.SUPER_ADMIN]))],
+)
 async def update_user(
     user_id: int,
     data: UserUpdate,
     current_user: dict = Depends(get_current_user),
 ):
+    """Sprint 3.5 P0: solo ADMIN/SUPER_ADMIN puede modificar usuarios (incluido cambio de rol)."""
     """Actualiza un usuario"""
     conn = get_db_connection()
     cursor = conn.cursor()
