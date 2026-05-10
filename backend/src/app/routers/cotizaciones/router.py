@@ -23,6 +23,10 @@ from ...constants import (
     Roles, ROLES_COTIZADOR, ROLES_APROBAR_COTIZACION,
     can_use_cotizador, can_approve_cotizacion
 )
+
+# Sprint 3.5 RBAC Hardening Opcion C (chip 106)
+from ...rbac_dependencies import require_role
+from ...roles_catalog import RoleId
 from ...middleware.roles import require_roles, require_cotizador, require_aprobar_cotizacion
 
 from ...schemas.cotizacion import (
@@ -699,10 +703,13 @@ async def update_cotizacion(id: int, data: CotizacionUpdate):
         conn.close()
 
 
-@router.delete("/{id}")
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(require_role([RoleId.JEFE_VENTAS, RoleId.GERENTE_GENERAL, RoleId.GERENTE_COMERCIAL]))],
+)
 async def delete_cotizacion(id: int):
     """
-    Elimina (desactiva) una cotización.
+    Elimina (desactiva) una cotización. Sprint 3.5 P0: solo ADMIN/SUPER_ADMIN/JEFE_VENTAS/Gerentes.
     """
     conn = get_db_connection()
     cursor = conn.cursor()

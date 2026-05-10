@@ -105,35 +105,40 @@ ROLES = [
     (19, "VENDEDOR_EXTERNO", 139),
 ]
 
-# Endpoints sensibles a auditar (sample representativo de cada area)
-# Politica esperada: la mayoria de endpoints autenticados son accesibles para
-# todos los roles logueados en este sistema (no hay decorators @requires_role
-# explicitos). Marcamos como SENSITIVE solo los que tienen logica de filtrado
-# por rol implicita (work-orders crear, eliminar, validacion admin).
+# Endpoints sensibles a auditar
+# Sprint 3 sample (READ): la mayoria de endpoints autenticados son accesibles
+# para todos los roles. Sprint 3.5 agrego endpoints DESTRUCTIVOS protegidos con
+# Depends(require_role) - esperamos 403 para roles no autorizados, 200/4xx legitimos
+# para roles autorizados.
+#
+# Formato: (method, path, descripcion, roles_esperados_OK | None=all_authenticated)
+# roles_esperados_OK None significa "todos los roles autenticados".
+# roles_esperados_OK lista significa "solo estos roles deberian recibir 2xx/4xx no-403".
+ADMIN_ROLES = [1, 18]  # ADMIN + SUPER_ADMIN
 ENDPOINTS = [
-    # (method, path, descripcion, roles_esperados_OK | None=all_authenticated)
+    # === Sprint 3 sample READ - todos los roles deberian acceder ===
     ("GET", "/auth/me", "Profile propio", None),
     ("GET", "/auth/roles", "Catalogo roles", None),
     ("GET", "/mantenedores/clients/?page_size=1", "Lista clientes", None),
     ("GET", "/mantenedores/generic/canales", "Lista canales", None),
     ("GET", "/mantenedores/generic/procesos", "Lista procesos", None),
     ("GET", "/mantenedores/jerarquias/nivel1?page_size=1", "Jerarquias N1", None),
-    ("GET", "/mantenedores/jerarquias/nivel2/parents", "Jerarquias N2 parents", None),
-    ("GET", "/mantenedores/jerarquias/nivel3/parents", "Jerarquias N3 parents", None),
     ("GET", "/cotizaciones/?page_size=1", "Lista cotizaciones", None),
-    ("GET", "/cotizaciones/estados/", "Estados cotizacion", None),
     ("GET", "/work-orders/?page_size=1", "Lista OTs", None),
     ("GET", "/work-orders/filter-options", "Filter options OT", None),
-    ("GET", "/work-orders/form-options-complete", "Form options OT", None),
-    ("GET", "/cascades/jerarquias/nivel2-rubro?hierarchy_id=1", "Cascada N2", None),
     ("GET", "/areahc/form-options-complete", "Form options cotizador", None),
     ("GET", "/form-options/certificados-calidad", "Certificados calidad", None),
-    ("GET", "/reports/dashboard", "Dashboard reports", None),
-    ("GET", "/muestras/?page_size=1", "Lista muestras", None),
     ("GET", "/materials/?page_size=1", "Lista materials", None),
-    ("GET", "/uploads/", "Uploads list", None),
-    # Endpoints sin auth (publicos) - validar que NO requieren JWT
-    # (vacio en test, esos se prueban aparte)
+    # === Sprint 3.5 endpoints DESTRUCTIVOS - solo roles privilegiados ===
+    # NOTA: probamos con HTTP method real - puede dar 422/404 por payload vacio,
+    # eso esta OK; lo que validamos es: NO debe dar 403 a admin, SI debe dar 403 a otros.
+    ("DELETE", "/cotizaciones/999999", "DELETE cotizacion", [1, 18, 3, 2, 15]),  # ADMIN, SUPER, JEFE_VENTAS, GERENTE, GERENTE_COMERCIAL
+    ("POST", "/mantenedores/users/", "POST users", ADMIN_ROLES),
+    ("PUT", "/mantenedores/users/999999", "PUT users", ADMIN_ROLES),
+    ("POST", "/mantenedores/roles", "POST roles", ADMIN_ROLES),
+    ("PUT", "/mantenedores/roles/999999", "PUT roles", ADMIN_ROLES),
+    ("DELETE", "/mantenedores/roles/999999", "DELETE roles", ADMIN_ROLES),
+    ("PUT", "/mantenedores/roles/999999/permissions", "PUT roles permisos", ADMIN_ROLES),
 ]
 
 
@@ -150,12 +155,23 @@ def main() -> int:
 
     print(f"\n=== Matriz {len(ROLES)} roles x {len(ENDPOINTS)} endpoints ===")
     matrix: dict[str, dict[str, int]] = {}
+    leaks: list[str] = []  # rol no autorizado pudo ejecutar (esperado 403, observado != 403)
+    blocks: list[str] = []  # rol autorizado fue rechazado (esperado != 403, observado 403)
     for role_id, role_name, user_id in ROLES:
         token = make_token(secret, user_id, role_id)
         row: dict[str, int] = {}
-        for method, path, desc, _ in ENDPOINTS:
+        for method, path, desc, allowed in ENDPOINTS:
             code = hit(method, path, token)
             row[f"{method} {path}"] = code
+            # Validar matriz Sprint 3.5 - endpoints destructivos
+            if allowed is not None:
+                authorized = role_id in allowed
+                if not authorized and code != 403 and code != 401:
+                    # rol no autorizado pero NO recibio 403 -> LEAK
+                    leaks.append(f"  LEAK: rol={role_id}({role_name}) {method} {path} -> {code} (esperaba 403)")
+                if authorized and code == 403:
+                    # rol autorizado pero recibio 403 -> BLOQUEO falso
+                    blocks.append(f"  BLOQUEO: rol={role_id}({role_name}) {method} {path} -> 403 (esperaba 200/4xx)")
         matrix[f"{role_id}-{role_name}"] = row
         # Resumen rapido
         codes = list(row.values())

@@ -20,6 +20,8 @@ import logging
 
 from ...database import get_db_connection
 from ..auth import get_current_user
+from ...rbac_dependencies import require_role
+from ...roles_catalog import RoleId
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/mantenedores/roles", tags=["roles"])
@@ -207,7 +209,11 @@ async def get_role(
         conn.close()
 
 
-@router.post("", response_model=RoleResponse)
+@router.post(
+    "",
+    response_model=RoleResponse,
+    dependencies=[Depends(require_role([RoleId.ADMIN, RoleId.SUPER_ADMIN]))],
+)
 async def create_role(
     data: RoleCreate,
     current_user: dict = Depends(get_current_user),
@@ -253,7 +259,11 @@ async def create_role(
         conn.close()
 
 
-@router.put("/{role_id}", response_model=RoleResponse)
+@router.put(
+    "/{role_id}",
+    response_model=RoleResponse,
+    dependencies=[Depends(require_role([RoleId.ADMIN, RoleId.SUPER_ADMIN]))],
+)
 async def update_role(
     role_id: int,
     data: RoleUpdate,
@@ -306,7 +316,10 @@ async def update_role(
         conn.close()
 
 
-@router.delete("/{role_id}")
+@router.delete(
+    "/{role_id}",
+    dependencies=[Depends(require_role([RoleId.ADMIN, RoleId.SUPER_ADMIN]))],
+)
 async def delete_role(
     role_id: int,
     current_user: dict = Depends(get_current_user),
@@ -409,7 +422,10 @@ async def get_role_permissions(
         conn.close()
 
 
-@router.put("/{role_id}/permissions")
+@router.put(
+    "/{role_id}/permissions",
+    dependencies=[Depends(require_role([RoleId.ADMIN, RoleId.SUPER_ADMIN]))],
+)
 async def update_role_permissions(
     role_id: int,
     data: UpdatePermissionsRequest,
