@@ -7,12 +7,14 @@ Basado en: AreahcController.php y CalculosAreahcHelpers.php
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
-import pymysql
-import pymysql.cursors
-import os
 import logging
 import math
 from decimal import Decimal
+
+# Sprint 5 Publicacion Railway (chip 104): usar helper estandar database.get_db_connection
+# que lee config desde Pydantic Settings (env). Antes este router tenia su propia version
+# con os.getenv fallback a 127.0.0.1 que rompia en Railway productivo (CONNECTION REFUSED).
+from ..database import get_db_connection
 
 logger = logging.getLogger(__name__)
 
@@ -26,22 +28,6 @@ def to_float(value) -> float:
     return float(value)
 
 router = APIRouter(prefix="/areahc", tags=["Área HC y Cartón"])
-
-
-# =============================================
-# CONEXIÓN A BASE DE DATOS
-# =============================================
-
-def get_db_connection():
-    """Obtiene conexión a MySQL con DictCursor"""
-    return pymysql.connect(
-        host=os.getenv("LARAVEL_MYSQL_HOST", os.getenv("MYSQL_HOST", "127.0.0.1")),
-        port=int(os.getenv("LARAVEL_MYSQL_PORT", os.getenv("MYSQL_PORT", "3306"))),
-        user=os.getenv("LARAVEL_MYSQL_USER", os.getenv("MYSQL_USER", "envases")),
-        password=os.getenv("LARAVEL_MYSQL_PASSWORD", os.getenv("MYSQL_PASSWORD", "secret")),
-        database=os.getenv("MYSQL_DATABASE", "envases_ot"),
-        cursorclass=pymysql.cursors.DictCursor
-    )
 
 
 # =============================================

@@ -44,7 +44,13 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 
 def get_db_connection():
-    """Conexion a MySQL."""
+    """Conexion a MySQL (Sprint 5: delega a database helper estandar via Pydantic Settings)."""
+    from ..database import get_db_connection as _shared
+    return _shared()
+
+
+def _legacy_get_db_connection_DEPRECATED():
+    """DEPRECATED Sprint 5 - kept for reference only."""
     return pymysql.connect(
         host=os.getenv("LARAVEL_MYSQL_HOST", os.getenv("MYSQL_HOST", "127.0.0.1")),
         port=int(os.getenv("LARAVEL_MYSQL_PORT", os.getenv("MYSQL_PORT", "3306"))),

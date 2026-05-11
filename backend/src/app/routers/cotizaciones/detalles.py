@@ -13,6 +13,9 @@ import os
 import json
 import logging
 
+# Sprint 5 Publicacion Railway (chip 104): usar helper estandar database.get_db_connection
+from ...database import get_db_connection as _shared_get_db_connection
+
 from ...schemas.detalle_cotizacion import (
     DetalleCotizacionCreate,
     DetalleCotizacionCreateRequest,
@@ -50,15 +53,8 @@ router = APIRouter(prefix="/cotizaciones", tags=["Detalles Cotización"])
 # =============================================
 
 def get_db_connection():
-    """Obtiene conexión a MySQL con DictCursor"""
-    return pymysql.connect(
-        host=os.getenv("LARAVEL_MYSQL_HOST", os.getenv("MYSQL_HOST", "127.0.0.1")),
-        port=int(os.getenv("LARAVEL_MYSQL_PORT", os.getenv("MYSQL_PORT", "3306"))),
-        user=os.getenv("LARAVEL_MYSQL_USER", os.getenv("MYSQL_USER", "envases")),
-        password=os.getenv("LARAVEL_MYSQL_PASSWORD", os.getenv("MYSQL_PASSWORD", "secret")),
-        database=os.getenv("MYSQL_DATABASE", "envases_ot"),
-        cursorclass=pymysql.cursors.DictCursor
-    )
+    """Obtiene conexión a MySQL con DictCursor (Sprint 5: usa helper estandar)."""
+    return _shared_get_db_connection()
 
 
 # =============================================
