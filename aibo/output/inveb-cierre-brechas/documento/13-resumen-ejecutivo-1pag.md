@@ -52,18 +52,45 @@ Solo coordinación humana — **0 trabajo técnico pendiente:**
 
 | Recurso | URL |
 |---|---|
-| **Backend productivo (Railway)** | https://inveb-api-production-a923.up.railway.app |
-| **Healthcheck** | https://inveb-api-production-a923.up.railway.app/health |
-| **API Docs (Swagger)** | https://inveb-api-production-a923.up.railway.app/docs |
-| **Repositorio GitHub** | https://github.com/dpllano/inveb-sistema |
-| **Pull Requests auditables** | `#1` a `#22` mergeados a `main` |
-| **Login admin** | RUT 22222222-2 (Administrador) |
+| **🌐 Aplicación frontend (acceso visual)** | **https://inveb-frontend-production-307c.up.railway.app** |
+| **API backend (REST JSON)** | https://inveb-api-production-a923.up.railway.app |
+| Healthcheck backend | https://inveb-api-production-a923.up.railway.app/health |
+| API Docs (Swagger) | https://inveb-api-production-a923.up.railway.app/docs |
+| Repositorio GitHub | https://github.com/dpllano/inveb-sistema |
+| Pull Requests auditables | `#1` a `#23` mergeados a `main` |
+| **Login admin para demo** | RUT 22222222-2 / password `test123` (Administrador) |
 
 ---
 
 ## Próximo paso recomendado
 
 **Reunión CMPC** de 60-90 minutos con el paquete formal de validación (documento `11-validacion-admin-cmpc.md`). Cuando CMPC responda Q1-Q6 + dé OK escrito de las 31 brechas → **cierre formal completo del proyecto**.
+
+---
+
+## Anexo — Credenciales de demo (16 usuarios cubriendo 15 roles)
+
+**Password común:** `test123` · **URL app:** https://inveb-frontend-production-307c.up.railway.app
+
+| Rol | RUT | Email |
+|---|---|---|
+| Administrador | `22222222-2` | `admin@inveb.cl` |
+| Gerente | `33333333-3` | `gerente@inveb.cl` |
+| Jefe de Ventas | `23748870-9` | `jventas@inveb.cl` |
+| Vendedor | `11334692-2` | `vendedor@inveb.cl` |
+| Jefe de Desarrollo | `20649380-1` | `jdesarrollo@inveb.cl` |
+| Ingeniero | `8106237-4` | `ingeniero@inveb.cl` |
+| Jefe de Diseño e Impresión | `16193907-2` | `jdiseno@inveb.cl` |
+| Diseñador | `9719795-4` | `disenador@inveb.cl` |
+| Jefe de Precatalogación | `24727035-3` | `jprecatalogador@inveb.cl` |
+| Precatalogador | `10554084-1` | `precatalogador@inveb.cl` |
+| Jefe de Catalogación | `6334369-2` | `jcatalogador@inveb.cl` |
+| Catalogador | `5068443-1` | `catalogador@inveb.cl` |
+| Jefe de Muestras | `16161616-1` | `jefemuestras@inveb.cl` |
+| Técnico Muestras (Stgo) | `16161617-2` | `tecnicomuestras@inveb.cl` |
+| Técnico Muestras (Pte Alto) | `16161618-3` | `tecnicomuestraspuentealto@inveb.cl` |
+| Técnico Muestras (Osorno) | `16161619-4` | `tecnicomuestrasosorno@inveb.cl` |
+| Vendedor Externo | `8827783-K` | `pablo.rodriguez@cmpc.com` |
 
 ---
 
