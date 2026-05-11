@@ -1,0 +1,801 @@
+{
+  "fecha": "2026-05-11T10:50:28.630211",
+  "api_base": "http://localhost:8001/api/v1",
+  "mantenedores_generic": [
+    {
+      "tabla": "canales",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 212.2,
+      "total_rows": 8
+    },
+    {
+      "tabla": "organizaciones_ventas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 153.6,
+      "total_rows": 3
+    },
+    {
+      "tabla": "tipos_cintas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 40.4,
+      "total_rows": 3
+    },
+    {
+      "tabla": "colores",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 44.8,
+      "total_rows": 1124
+    },
+    {
+      "tabla": "estilos",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 100.6,
+      "total_rows": 10
+    },
+    {
+      "tabla": "tipo_productos",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 24.2,
+      "total_rows": 39
+    },
+    {
+      "tabla": "almacenes",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 41.4,
+      "total_rows": 0
+    },
+    {
+      "tabla": "tipo_palet",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 30.7,
+      "total_rows": 42
+    },
+    {
+      "tabla": "grupo_imputacion_material",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 17.3,
+      "total_rows": 12
+    },
+    {
+      "tabla": "matrices",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 35.8,
+      "total_rows": 3738
+    },
+    {
+      "tabla": "sectores",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 21.8,
+      "total_rows": 0
+    },
+    {
+      "tabla": "cartones",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 24.1,
+      "total_rows": 235
+    },
+    {
+      "tabla": "secuencias_operacionales",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 22.0,
+      "total_rows": 51
+    },
+    {
+      "tabla": "rechazo_conjunto",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 20.7,
+      "total_rows": 1
+    },
+    {
+      "tabla": "tiempo_tratamiento",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 18.1,
+      "total_rows": 1
+    },
+    {
+      "tabla": "grupo_materiales_1",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 24.4,
+      "total_rows": 4
+    },
+    {
+      "tabla": "grupo_materiales_2",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 36.5,
+      "total_rows": 20
+    },
+    {
+      "tabla": "materiales",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 44.7,
+      "total_rows": 2000
+    },
+    {
+      "tabla": "grupo_plantas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 19.0,
+      "total_rows": 4
+    },
+    {
+      "tabla": "adhesivos",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 22.7,
+      "total_rows": 16
+    },
+    {
+      "tabla": "cebes",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 29.2,
+      "total_rows": 16
+    },
+    {
+      "tabla": "clasificaciones_clientes",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 26.8,
+      "total_rows": 5
+    },
+    {
+      "tabla": "armados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 19.6,
+      "total_rows": 3
+    },
+    {
+      "tabla": "procesos",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 22.4,
+      "total_rows": 15
+    },
+    {
+      "tabla": "pegados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 26.2,
+      "total_rows": 5
+    },
+    {
+      "tabla": "envases",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 21.7,
+      "total_rows": 10
+    },
+    {
+      "tabla": "rayados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 20.1,
+      "total_rows": 6
+    },
+    {
+      "tabla": "papeles",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 24.9,
+      "total_rows": 77
+    },
+    {
+      "tabla": "cardboards",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 18.2,
+      "total_rows": 11
+    },
+    {
+      "tabla": "carton_esquineros",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 13.6,
+      "total_rows": 18
+    },
+    {
+      "tabla": "plantas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 18.4,
+      "total_rows": 3
+    },
+    {
+      "tabla": "tipo_ondas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 27.5,
+      "total_rows": 9
+    },
+    {
+      "tabla": "factores_ondas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 19.0,
+      "total_rows": 12
+    },
+    {
+      "tabla": "factores_desarrollos",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 22.3,
+      "total_rows": 12
+    },
+    {
+      "tabla": "factores_seguridads",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 23.1,
+      "total_rows": 18
+    },
+    {
+      "tabla": "areahcs",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 16.1,
+      "total_rows": 0
+    },
+    {
+      "tabla": "consumo_adhesivos",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 12.8,
+      "total_rows": 12
+    },
+    {
+      "tabla": "consumo_energias",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 13.7,
+      "total_rows": 30
+    },
+    {
+      "tabla": "consumo_adhesivo_pegados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 14.5,
+      "total_rows": 30
+    },
+    {
+      "tabla": "merma_corrugadoras",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 21.4,
+      "total_rows": 282
+    },
+    {
+      "tabla": "merma_convertidoras",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 14.3,
+      "total_rows": 435
+    },
+    {
+      "tabla": "mercados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 15.7,
+      "total_rows": 3
+    },
+    {
+      "tabla": "rubros",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 24.5,
+      "total_rows": 23
+    },
+    {
+      "tabla": "ciudades_fletes",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 14.0,
+      "total_rows": 10
+    },
+    {
+      "tabla": "fletes",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 19.1,
+      "total_rows": 18
+    },
+    {
+      "tabla": "maquila_servicios",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 15.5,
+      "total_rows": 21
+    },
+    {
+      "tabla": "tarifario",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 17.8,
+      "total_rows": 12
+    },
+    {
+      "tabla": "tarifario_margens",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 14.4,
+      "total_rows": 579
+    },
+    {
+      "tabla": "variables_cotizador",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 11.9,
+      "total_rows": 1
+    },
+    {
+      "tabla": "insumos_palletizados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 17.2,
+      "total_rows": 11
+    },
+    {
+      "tabla": "detalle_precio_palletizados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 12.9,
+      "total_rows": 3
+    },
+    {
+      "tabla": "paises",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 14.9,
+      "total_rows": 240
+    },
+    {
+      "tabla": "fsc",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 16.4,
+      "total_rows": 14
+    },
+    {
+      "tabla": "reference_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 11.5,
+      "total_rows": 6
+    },
+    {
+      "tabla": "recubrimiento_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 15.5,
+      "total_rows": 6
+    },
+    {
+      "tabla": "cantidad_base",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 15.3,
+      "total_rows": 1
+    },
+    {
+      "tabla": "margenes_minimos",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 17.2,
+      "total_rows": 108
+    },
+    {
+      "tabla": "codigo_materials",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 11.4,
+      "total_rows": 0
+    },
+    {
+      "tabla": "prefijo_materials",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 11.2,
+      "total_rows": 0
+    },
+    {
+      "tabla": "sufijo_materials",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 14.7,
+      "total_rows": 0
+    },
+    {
+      "tabla": "pallet_status_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 12.8,
+      "total_rows": 3
+    },
+    {
+      "tabla": "formato_bobinas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 10.4,
+      "total_rows": 0
+    },
+    {
+      "tabla": "pallet_patrons",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 13.5,
+      "total_rows": 463
+    },
+    {
+      "tabla": "pallet_box_quantities",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 12.6,
+      "total_rows": 19
+    },
+    {
+      "tabla": "audits",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 31.7,
+      "total_rows": null
+    },
+    {
+      "tabla": "bitacora_campos_modificados",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 12.1,
+      "total_rows": 0
+    },
+    {
+      "tabla": "additional_characteristics_type",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 9.7,
+      "total_rows": 6
+    },
+    {
+      "tabla": "changelogs",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 9.9,
+      "total_rows": 0
+    },
+    {
+      "tabla": "pallet_protections",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 9.3,
+      "total_rows": 10
+    },
+    {
+      "tabla": "states",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 13.2,
+      "total_rows": 22
+    },
+    {
+      "tabla": "pallet_qas",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 16.7,
+      "total_rows": 9
+    },
+    {
+      "tabla": "pallet_tag_formats",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 19.1,
+      "total_rows": 11
+    },
+    {
+      "tabla": "target_market",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 22.0,
+      "total_rows": 7
+    },
+    {
+      "tabla": "design_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 20.2,
+      "total_rows": 6
+    },
+    {
+      "tabla": "precut_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 19.5,
+      "total_rows": 6
+    },
+    {
+      "tabla": "coverage_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 10.9,
+      "total_rows": 5
+    },
+    {
+      "tabla": "impresion",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 9.8,
+      "total_rows": 7
+    },
+    {
+      "tabla": "ink_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 9.4,
+      "total_rows": 4
+    },
+    {
+      "tabla": "print_type",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 20.6,
+      "total_rows": 5
+    },
+    {
+      "tabla": "food_types",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 22.1,
+      "total_rows": 8
+    },
+    {
+      "tabla": "protection_type",
+      "method": "GET",
+      "code": 200,
+      "elapsed_ms": 10.1,
+      "total_rows": 4
+    }
+  ],
+  "endpoints_feature": [
+    {
+      "group": "auth",
+      "method": "GET",
+      "path": "/auth/me",
+      "accion": "GET profile",
+      "code": 200,
+      "elapsed_ms": 7.0
+    },
+    {
+      "group": "auth",
+      "method": "GET",
+      "path": "/auth/roles",
+      "accion": "LIST roles",
+      "code": 200,
+      "elapsed_ms": 5.3
+    },
+    {
+      "group": "clients",
+      "method": "GET",
+      "path": "/mantenedores/clients/?page_size=1",
+      "accion": "LIST",
+      "code": 200,
+      "elapsed_ms": 54.9
+    },
+    {
+      "group": "installations",
+      "method": "GET",
+      "path": "/mantenedores/installations/by-client/627",
+      "accion": "LIST by client",
+      "code": 200,
+      "elapsed_ms": 69.4
+    },
+    {
+      "group": "users",
+      "method": "GET",
+      "path": "/mantenedores/users/?page_size=1",
+      "accion": "LIST",
+      "code": 200,
+      "elapsed_ms": 18.4
+    },
+    {
+      "group": "roles",
+      "method": "GET",
+      "path": "/mantenedores/roles/?page_size=1",
+      "accion": "LIST",
+      "code": 200,
+      "elapsed_ms": 60.2
+    },
+    {
+      "group": "jerarquias",
+      "method": "GET",
+      "path": "/mantenedores/jerarquias/nivel1?page_size=1",
+      "accion": "LIST N1",
+      "code": 200,
+      "elapsed_ms": 28.4
+    },
+    {
+      "group": "jerarquias",
+      "method": "GET",
+      "path": "/mantenedores/jerarquias/nivel2?page_size=1",
+      "accion": "LIST N2",
+      "code": 200,
+      "elapsed_ms": 29.0
+    },
+    {
+      "group": "jerarquias",
+      "method": "GET",
+      "path": "/mantenedores/jerarquias/nivel3?page_size=1",
+      "accion": "LIST N3",
+      "code": 200,
+      "elapsed_ms": 48.6
+    },
+    {
+      "group": "jerarquias",
+      "method": "GET",
+      "path": "/mantenedores/jerarquias/nivel2/parents",
+      "accion": "Parents N2",
+      "code": 200,
+      "elapsed_ms": 8.9
+    },
+    {
+      "group": "jerarquias",
+      "method": "GET",
+      "path": "/mantenedores/jerarquias/nivel3/parents",
+      "accion": "Parents N3",
+      "code": 200,
+      "elapsed_ms": 13.5
+    },
+    {
+      "group": "cotizaciones",
+      "method": "GET",
+      "path": "/cotizaciones/?page_size=1",
+      "accion": "LIST",
+      "code": 200,
+      "elapsed_ms": 42.9
+    },
+    {
+      "group": "cotizaciones",
+      "method": "GET",
+      "path": "/cotizaciones/estados/",
+      "accion": "LIST estados",
+      "code": 200,
+      "elapsed_ms": 8.5
+    },
+    {
+      "group": "cotizaciones",
+      "method": "GET",
+      "path": "/cotizaciones/pendientes-aprobacion/?page_size=1",
+      "accion": "LIST pendientes",
+      "code": 200,
+      "elapsed_ms": 14.5
+    },
+    {
+      "group": "work_orders",
+      "method": "GET",
+      "path": "/work-orders/?page_size=1",
+      "accion": "LIST",
+      "code": 200,
+      "elapsed_ms": 289.9
+    },
+    {
+      "group": "work_orders",
+      "method": "GET",
+      "path": "/work-orders/filter-options",
+      "accion": "Filter options",
+      "code": 200,
+      "elapsed_ms": 30.7
+    },
+    {
+      "group": "work_orders",
+      "method": "GET",
+      "path": "/work-orders/form-options-complete",
+      "accion": "Form options",
+      "code": 200,
+      "elapsed_ms": 221.2
+    },
+    {
+      "group": "cascades",
+      "method": "GET",
+      "path": "/cascades/clientes/627/instalaciones",
+      "accion": "Cascada instalaciones",
+      "code": 200,
+      "elapsed_ms": 30.3
+    },
+    {
+      "group": "cascades",
+      "method": "GET",
+      "path": "/cascades/clientes/627/contactos",
+      "accion": "Cascada contactos",
+      "code": 200,
+      "elapsed_ms": 19.6
+    },
+    {
+      "group": "cascades",
+      "method": "GET",
+      "path": "/cascades/jerarquias/nivel2-rubro?hierarchy_id=1",
+      "accion": "Cascada N2",
+      "code": 200,
+      "elapsed_ms": 9.7
+    },
+    {
+      "group": "cascades",
+      "method": "GET",
+      "path": "/cascades/jerarquias/nivel3-rubro?subhierarchy_id=1",
+      "accion": "Cascada N3",
+      "code": 200,
+      "elapsed_ms": 7.4
+    },
+    {
+      "group": "form_options",
+      "method": "GET",
+      "path": "/areahc/form-options-complete",
+      "accion": "Cotizador completo",
+      "code": 200,
+      "elapsed_ms": 54.6
+    },
+    {
+      "group": "form_options",
+      "method": "GET",
+      "path": "/form-options/certificados-calidad",
+      "accion": "Certificados",
+      "code": 200,
+      "elapsed_ms": 12.2
+    },
+    {
+      "group": "muestras",
+      "method": "GET",
+      "path": "/muestras/?page_size=1",
+      "accion": "LIST",
+      "code": 405,
+      "elapsed_ms": 11.8
+    },
+    {
+      "group": "materials",
+      "method": "GET",
+      "path": "/materials/?page_size=1",
+      "accion": "LIST",
+      "code": 200,
+      "elapsed_ms": 42.2
+    },
+    {
+      "group": "reports",
+      "method": "GET",
+      "path": "/reports/ots-por-usuario?fecha_desde=2024-01-01&fecha_hasta=2024-12-31",
+      "accion": "OTs por usuario",
+      "code": 200,
+      "elapsed_ms": 63.5
+    },
+    {
+      "group": "reports",
+      "method": "GET",
+      "path": "/reports/carga-mensual?ano=2024",
+      "accion": "Carga mensual",
+      "code": 200,
+      "elapsed_ms": 28.4
+    }
+  ],
+  "summary": {
+    "total": 108,
+    "ok": 107,
+    "fail": 1,
+    "ok_pct": 99.1,
+    "code_distribution": {
+      "200": 107,
+      "405": 1
+    }
+  }
+}
