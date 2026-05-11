@@ -215,14 +215,47 @@ Tecno Andina · `daniela.llano@tecnoandina.cl`
 
 ---
 
+## Anexo — Credenciales para probar la app antes de la reunión
+
+Para que el equipo CMPC pueda **explorar el sistema en producción antes de la reunión formal**, dejo 16 usuarios fixture activos, uno por cada rol del catálogo. La password es común: `test123`.
+
+**URL app productiva:** https://inveb-frontend-production-307c.up.railway.app
+
+| Rol | RUT | Email |
+|---|---|---|
+| Administrador | `22222222-2` | `admin@inveb.cl` |
+| Gerente | `33333333-3` | `gerente@inveb.cl` |
+| Jefe de Ventas | `23748870-9` | `jventas@inveb.cl` |
+| Vendedor | `11334692-2` | `vendedor@inveb.cl` |
+| Jefe de Desarrollo | `20649380-1` | `jdesarrollo@inveb.cl` |
+| Ingeniero | `8106237-4` | `ingeniero@inveb.cl` |
+| Jefe de Diseño e Impresión | `16193907-2` | `jdiseno@inveb.cl` |
+| Diseñador | `9719795-4` | `disenador@inveb.cl` |
+| Jefe de Precatalogación | `24727035-3` | `jprecatalogador@inveb.cl` |
+| Precatalogador | `10554084-1` | `precatalogador@inveb.cl` |
+| Jefe de Catalogación | `6334369-2` | `jcatalogador@inveb.cl` |
+| Catalogador | `5068443-1` | `catalogador@inveb.cl` |
+| Jefe de Muestras | `16161616-1` | `jefemuestras@inveb.cl` |
+| Técnico de Muestras (Stgo) | `16161617-2` | `tecnicomuestras@inveb.cl` |
+| Técnico de Muestras (Pte Alto) | `16161618-3` | `tecnicomuestraspuentealto@inveb.cl` |
+| Técnico de Muestras (Osorno) | `16161619-4` | `tecnicomuestrasosorno@inveb.cl` |
+| Vendedor Externo | `8827783-K` | `pablo.rodriguez@cmpc.com` |
+
+Sugerencia: probar al menos con 1 rol operativo (ej Vendedor) y 1 jefatura (ej Jefe de Ventas) para validar la **visibilidad RBAC** del sistema antes de la reunión.
+
+> ⚠️ **Nota:** estos son usuarios de DEMO. Los usuarios reales operativos de CMPC mantienen sus passwords propias. Si CMPC requiere que cambiemos las passwords de demo o las desactivemos post-cierre, indicarlo.
+
+---
+
 ## Anexos sugeridos (PDFs adjuntos al email)
 
-1. **`11-validacion-admin-cmpc.md`** (este documento en versión completa con tablas detalladas)
-2. **`10-informe-ejecutivo.md`** (síntesis ejecutiva del proyecto)
-3. **`04-catalogo-unificado-brechas.md`** (las 77 brechas con IDs y status)
-4. **`tests/certificacion-e2e-20260511.md`** (informe certificación final)
-5. **`tests/auditoria-rbac-20260509.md`** (informe RBAC)
-6. **(Opcional)** Listado de PRs `#1` a `#22` con links GitHub directos
+1. **`13-resumen-ejecutivo-1pag.md`** (resumen ejecutivo 1 página con métricas + URLs + credenciales)
+2. **`11-validacion-admin-cmpc.md`** (este documento en versión completa con tablas detalladas)
+3. **`10-informe-ejecutivo.md`** (síntesis ejecutiva del proyecto)
+4. **`04-catalogo-unificado-brechas.md`** (las 77 brechas con IDs y status)
+5. **`tests/certificacion-e2e-20260511.md`** (informe certificación final)
+6. **`tests/auditoria-rbac-20260509.md`** (informe RBAC)
+7. **(Opcional)** Listado de PRs `#1` a `#23` con links GitHub directos
 
 ---
 
