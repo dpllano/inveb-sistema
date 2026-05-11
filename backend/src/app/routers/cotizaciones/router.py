@@ -18,6 +18,11 @@ import logging
 import io
 import jwt
 
+# Sprint 5 Publicacion Railway (chip 104): usar settings + database helper estandar
+# en vez de os.getenv directo (que causaba JWT mismatch + DB connection refused productivo)
+from ...config import get_settings
+from ...database import get_db_connection as _shared_get_db_connection
+
 # Sprint G: Middleware de roles y constantes
 from ...constants import (
     Roles, ROLES_COTIZADOR, ROLES_APROBAR_COTIZACION,
@@ -53,14 +58,22 @@ class CotizacionFromOTRequest(BaseModel):
     observacion_cliente: Optional[str] = None
 
 
+_settings = get_settings()
+
+
 def get_current_user_optional(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-    """Obtiene el usuario actual del token JWT"""
+    """Obtiene el usuario actual del token JWT.
+
+    Sprint 5: usa settings.JWT_SECRET_KEY (Pydantic Settings) en vez de os.getenv directo.
+    El default hardcoded de os.getenv difería del de settings.py, causando 'Token invalido'
+    en Railway productivo cuando ambos modulos leían el mismo env var con fallbacks distintos.
+    """
     try:
         token = credentials.credentials
         payload = jwt.decode(
             token,
-            os.getenv("JWT_SECRET_KEY", "d1ff1cult_s3cr3t_k3y_f0r_jwt_t0k3n"),
-            algorithms=["HS256"]
+            _settings.JWT_SECRET_KEY,
+            algorithms=[_settings.JWT_ALGORITHM]
         )
         return {
             "id": int(payload.get("sub", 0)),
@@ -79,15 +92,13 @@ def get_current_user_optional(credentials: HTTPAuthorizationCredentials = Depend
 # =============================================
 
 def get_db_connection():
-    """Obtiene conexión a MySQL con DictCursor"""
-    return pymysql.connect(
-        host=os.getenv("LARAVEL_MYSQL_HOST", os.getenv("MYSQL_HOST", "127.0.0.1")),
-        port=int(os.getenv("LARAVEL_MYSQL_PORT", os.getenv("MYSQL_PORT", "3306"))),
-        user=os.getenv("LARAVEL_MYSQL_USER", os.getenv("MYSQL_USER", "envases")),
-        password=os.getenv("LARAVEL_MYSQL_PASSWORD", os.getenv("MYSQL_PASSWORD", "secret")),
-        database=os.getenv("LARAVEL_MYSQL_DATABASE", os.getenv("MYSQL_DATABASE", "envases_ot")),
-        cursorclass=pymysql.cursors.DictCursor
-    )
+    """Obtiene conexión a MySQL con DictCursor.
+
+    Sprint 5: delega al helper estandar database.get_db_connection que lee config
+    desde Pydantic Settings. Antes este modulo usaba os.getenv con fallback a 127.0.0.1
+    que rompia en Railway productivo (CONNECTION REFUSED).
+    """
+    return _shared_get_db_connection()
 
 
 # =============================================

@@ -32,16 +32,9 @@ COLOR_TEXTO = colors.HexColor('#3c3c3c')
 
 
 def get_db_connection():
-    """Conexion a MySQL."""
-    return pymysql.connect(
-        host=os.getenv("LARAVEL_MYSQL_HOST", os.getenv("MYSQL_HOST", "127.0.0.1")),
-        port=int(os.getenv("LARAVEL_MYSQL_PORT", os.getenv("MYSQL_PORT", "3306"))),
-        user=os.getenv("LARAVEL_MYSQL_USER", os.getenv("MYSQL_USER", "envases")),
-        password=os.getenv("LARAVEL_MYSQL_PASSWORD", os.getenv("MYSQL_PASSWORD", "secret")),
-        database=os.getenv("MYSQL_DATABASE", "envases_ot"),
-        cursorclass=pymysql.cursors.DictCursor,
-        charset='utf8mb4'
-    )
+    """Conexion a MySQL (Sprint 5: delega a database helper estandar via Pydantic Settings)."""
+    from ..database import get_db_connection as _shared
+    return _shared()
 
 
 def get_cotizacion_completa(cotizacion_id: int) -> Dict[str, Any]:
