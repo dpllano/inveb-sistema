@@ -391,7 +391,7 @@ class ClasificacionOption(BaseModel):
 @router.get("/", response_model=ClientListResponse)
 async def list_clients(
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=2000),
+    page_size: int = Query(20, ge=1, le=5000),
     rut: Optional[str] = Query(None, description="Filtrar por RUT"),
     nombre: Optional[str] = Query(None, description="Filtrar por nombre"),
     search: Optional[str] = Query(None, description="Busqueda general en RUT, nombre y codigo"),

@@ -8,7 +8,7 @@ import { useState, useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 
 // API Base URL
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001/api/v1';
 
 // =============================================
 // TIPOS E INTERFACES
