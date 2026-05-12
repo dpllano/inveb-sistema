@@ -12,7 +12,7 @@ import CalculoHCModal from './CalculoHCModal';
 import { cascadesApi } from '../../services/api';
 
 // API Base URL
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001/api/v1';
 
 // =============================================
 // TIPOS E INTERFACES

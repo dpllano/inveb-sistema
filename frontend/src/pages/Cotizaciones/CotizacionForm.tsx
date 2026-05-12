@@ -681,7 +681,7 @@ export default function CotizacionForm({ cotizacionId, onNavigate, isExterno = f
   const { data: clientsData, isLoading: isLoadingClients } = useQuery({
     queryKey: ['clients-for-cotizacion'],
     queryFn: async () => {
-      const response = await clientsApi.list({ page_size: 2000, activo: true });
+      const response = await clientsApi.list({ page_size: 3000, activo: true });
       return response.items as ClientOption[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

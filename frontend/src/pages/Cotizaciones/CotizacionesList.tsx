@@ -368,7 +368,7 @@ export default function CotizacionesList({ onNavigate }: CotizacionesListProps) 
   // Query para clientes (filtro listbox CLIENTE) - Sprint Frontend Mantenedores
   const { data: clientesData } = useQuery({
     queryKey: ['clientes-cotizacion-filter'],
-    queryFn: () => clientsApi.list({ activo: true, page_size: 100 }),
+    queryFn: () => clientsApi.list({ activo: true, page_size: 3000 }),
     staleTime: 1000 * 60 * 10,
   });
   const clientes = clientesData?.items ?? [];

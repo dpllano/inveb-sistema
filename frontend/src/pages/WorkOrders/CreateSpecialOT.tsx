@@ -321,7 +321,7 @@ export default function CreateSpecialOT({ onNavigate }: CreateSpecialOTProps) {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      clientsApi.list({ activo: true, page_size: 200 }).then(r => r.items).catch(() => [] as ClientListItem[]),
+      clientsApi.list({ activo: true, page_size: 3000 }).then(r => r.items).catch(() => [] as ClientListItem[]),
       jerarquiasApi.getNivel2Parents().catch(() => [] as ParentOption[]),
     ]).then(([cli, j1]) => {
       if (cancelled) return;
