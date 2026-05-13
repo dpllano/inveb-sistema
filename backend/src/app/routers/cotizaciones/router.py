@@ -387,23 +387,28 @@ async def get_cotizacion_costos_resumen(id: int):
             raise HTTPException(status_code=404, detail="Cotización no encontrada")
 
         # Obtener detalles con historial_resultados
+        # Nota: columnas opcionales (flete, maquila, armado, clisse_valor, matriz_valor,
+        # mano_obra) no existen en BD legacy; el codigo las maneja con det.get(X, 0).
         cursor.execute("""
             SELECT
-                dc.id, dc.descripcion, dc.cantidad, dc.flete,
+                dc.id,
+                dc.descripcion_material_detalle as descripcion,
+                dc.cantidad,
                 dc.carton_id, dc.cad_material_id,
                 dc.tipo_detalle_id, dc.planta_id,
                 dc.historial_resultados,
-                dc.maquila, dc.armado, dc.clisse_valor, dc.matriz_valor,
-                dc.mano_obra, dc.flete as flete_valor,
                 cb.codigo as carton_codigo,
-                cad.nombre as cad_nombre,
+                cad.cad as cad_nombre,
                 p.nombre as planta_nombre,
-                td.nombre as tipo_producto_nombre
+                CASE dc.tipo_detalle_id
+                    WHEN 1 THEN 'Corrugado'
+                    WHEN 2 THEN 'Esquinero'
+                    ELSE NULL
+                END as tipo_producto_nombre
             FROM detalle_cotizacions dc
             LEFT JOIN cardboards cb ON dc.carton_id = cb.id
             LEFT JOIN cads cad ON dc.cad_material_id = cad.id
             LEFT JOIN plantas p ON dc.planta_id = p.id
-            LEFT JOIN tipo_detalles td ON dc.tipo_detalle_id = td.id
             WHERE dc.cotizacion_id = %s
             ORDER BY dc.id
         """, (id,))
