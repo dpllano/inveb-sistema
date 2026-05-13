@@ -375,7 +375,7 @@ async def get_cotizacion_costos_resumen(id: int):
         # Obtener cotización
         cursor.execute("""
             SELECT c.*, ce.nombre as estado_nombre,
-                   cl.nombre_sap as cliente_nombre
+                   cl.nombre as cliente_nombre
             FROM cotizacions c
             LEFT JOIN cotizacion_estados ce ON c.estado_id = ce.id
             LEFT JOIN clients cl ON c.client_id = cl.id

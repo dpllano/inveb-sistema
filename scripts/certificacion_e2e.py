@@ -143,6 +143,7 @@ ENDPOINTS_FEATURE = [
     ("cotizaciones", "GET", "/cotizaciones/?page_size=1", "LIST"),
     ("cotizaciones", "GET", "/cotizaciones/estados/", "LIST estados"),
     ("cotizaciones", "GET", "/cotizaciones/pendientes-aprobacion/?page_size=1", "LIST pendientes"),
+    ("cotizaciones", "GET", "/cotizaciones/23/costos-resumen", "Cost summary cotizacion 23 (regression PR #26 cl.nombre)"),
     # Work Orders
     ("work_orders", "GET", "/work-orders/?page_size=1", "LIST"),
     ("work_orders", "GET", "/work-orders/filter-options", "Filter options"),
