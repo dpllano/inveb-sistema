@@ -601,7 +601,7 @@ export default function DetalleForm({
     setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
-  const validateForm = useCallback((): boolean => {
+  const validateForm = useCallback((): Record<string, string> => {
     const newErrors: Record<string, string> = {};
 
     if (isCorrugado) {
@@ -655,11 +655,25 @@ export default function DetalleForm({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   }, [formData, isCorrugado]);
 
   const handleSubmit = useCallback(() => {
-    if (!validateForm()) {
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      const errorList = Object.entries(validationErrors)
+        .map(([campo, msg]) => `- ${msg} (${campo})`)
+        .join('\n');
+      // eslint-disable-next-line no-console
+      console.warn('[DetalleForm] Validacion bloqueo submit. Campos faltantes:', validationErrors);
+      // Scroll al primer campo con error si tiene nombre
+      const primerCampo = Object.keys(validationErrors)[0];
+      const elemento = document.querySelector(`[name="${primerCampo}"]`) as HTMLElement | null;
+      if (elemento) {
+        elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        elemento.focus({ preventScroll: true });
+      }
+      alert(`No se puede guardar el detalle. Completa los siguientes campos:\n\n${errorList}`);
       return;
     }
     onSubmit(formData);
